@@ -2,6 +2,7 @@
 #' This function allows you to plot barcode diversities for each sample.
 #' Each panel of each cohort is saved individually. Then we save a multi-panel
 #' figure with all diversities and the legend.
+#' @import ggplot2
 #' @export
 
 #TODO: Generalize y-scale and adjust x-scale

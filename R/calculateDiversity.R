@@ -1,6 +1,6 @@
 #' This function allows you to compute barcode diversity for all samples and
 #' create dataframes with diversities per cohort
-#' @export
+#' @export calculate_diversity
 
 #################
 

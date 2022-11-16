@@ -1,32 +1,35 @@
-#library(timeseriesAnalysis)
+#!/usr/bin/env Rscript
+library(timeseriesAnalysis)
+library(optparse)
 
 #TODO: Make sure that all external functions are explicitly linked to their packages!
 
-# Retrieving arguments from command line
-args <- commandArgs(trailingOnly = TRUE)
+#Parse arguments from command line
+options <- list(
+  make_option(c("-x", "--intersection"), action = "store"),
+  make_option(c("-t", "--treshold"), action = "store"),
+  make_option(c("-p", "--outputPath"), action = "store"),
+  make_option(c("-n", "--sampleNames"), action = "store"),
+  make_option(c("-i", "--inputFiles"), action = "store")
+)
+arguments <- parse_args(OptionParser(option_list = options))
 
 # test if there is at least one argument: if not, return an error
-if (length(args)==0) {
+if (length(arguments)==1) {
   stop("Arguments must be supplied", call.=FALSE)
-} else if (length(args)> 0) {
+} else if (length(arguments)> 1) {
 
   print("Processing...")
-
-  cat(args, sep = "\n")
-  #n_intersect = args[1]
-  n_intersect = 1000
-  #max_freq_treshold= args[2]
-  max_freq_treshold = 0.0005
-  #label = args[3] (given by user?)
-  #output_directory = args[4]
-  output_directory = "~/Documents/"
-  #cohort_names = args[5]
-  cohort_names = list("M1", "M2")
-  #input_files <- list()
-  input_files <- list("M1_input.csv", "M2_input.csv")
-  # for(i in 2:length(args)) {
-  #   input_files <- append(input_files, args[i])
-  # }
+  n_intersect = as.numeric(arguments$intersection)
+  print(n_intersect)
+  max_freq_treshold= as.double(arguments$treshold)
+  print(max_freq_treshold)
+  output_directory = arguments$outputPath
+  print(output_directory)
+  cohort_names = as.list(strsplit(arguments$sampleNames, ",")[[1]])
+  print(cohort_names)
+  input_files = as.list(strsplit(arguments$inputFiles, ",")[[1]])
+  print(input_files)
 
   input_data <- lapply(input_files, readr::read_csv)
 }
@@ -57,7 +60,7 @@ treshold.top.max <- all.top.max[all.top.max$max >= max_freq_treshold, ]
 
 # TODO: access raw data : system.file("extdata", "model-coef.tsv", package = "myfirstpackage")
 #TODO: grDevices::hcl.colors(n) could be used instead of csv
-top_colors <- read_csv("timeseriesAnalysis/inst/extdata/top_colors2.csv")
+top_colors <- readr::read_csv("../inst/extdata/top_colors2.csv")
 
 ## we create a very long list of colors for low-frequency barcodes.
 ## repetition of colors isn't an issue, we just want each barcodes to be colored instead of assigning gray values

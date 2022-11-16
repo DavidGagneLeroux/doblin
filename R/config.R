@@ -1,7 +1,7 @@
 #' configuration functions
 #' @export
 theme_Publication <- function(base_size=24, base_family="Arial",aspect.ratio = 0.75) {
-  (theme_foundation(base_size=base_size, base_family=base_family)
+  (ggthemes::theme_foundation(base_size=base_size, base_family=base_family)
    + theme(plot.title = element_text(face = "bold",
                                      size = rel(1.2), hjust = 0.5),
            text = element_text(),
@@ -16,15 +16,14 @@ theme_Publication <- function(base_size=24, base_family="Arial",aspect.ratio = 0
            axis.ticks = element_line(),
            panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           plot.margin=unit(c(10,5,5,5),"mm"),
+           plot.margin=grid::unit(c(10,5,5,5),"mm"),
            aspect.ratio=aspect.ratio
    ))
 }
 
 theme_Publication_noYaxis <- function(base_size=24, base_family="Arial",aspect.ratio = 0.75) {
-  library(grid)
-  library(ggthemes)
-  (theme_foundation(base_size=base_size, base_family=base_family)
+
+  (ggthemes::theme_foundation(base_size=base_size, base_family=base_family)
     + theme(plot.title = element_text(face = "bold",
                                       size = rel(1.2), hjust = 0.5),
             text = element_text(),
@@ -39,7 +38,7 @@ theme_Publication_noYaxis <- function(base_size=24, base_family="Arial",aspect.r
             axis.ticks = element_line(),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
-            plot.margin=unit(c(10,5,5,5),"mm"),
+            plot.margin=grid::unit(c(10,5,5,5),"mm"),
             aspect.ratio=aspect.ratio
     ))
 }

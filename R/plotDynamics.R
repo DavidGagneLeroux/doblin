@@ -1,9 +1,14 @@
 #' A plot function
 #' This function allows you to plot barcode dynamics (Muller-style area plot and
 #'  log-line plot)
+#' @import ggplot2
 #' @export
 
 plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
+
+  #raw_df = dataframes[[1]]
+  #freq_treshold = max_freq_treshold
+  #cohort_name = cohort_names[[1]]
 
   breaks = sort(c(unique(raw_df$variable)))
   label = as.character(breaks)
@@ -25,7 +30,9 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
 
   # subset dataframe with barcodes above a certain max frequency
   #TODO: is this needed?
-  grouped_tf = tf %>% group_by(hex) %>% filter(max>freq_treshold) %>% ungroup()
+  grouped_by = magrittr::`%>%`(tf, dplyr::group_by(hex))
+  filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>freq_treshold))
+  grouped_tf = magrittr::`%>%`(filtered, dplyr::ungroup())
 
   # set color scale using universal hex colors
   mycolors = grouped_tf$hex
@@ -39,7 +46,7 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
   # here we plot a first geom_area with all the barcodes using the long color list
   # then we add a new fill scale, and plot a second geom area on top of the first using only the subsetted, high-freq barcodes
   g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
-    new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
+    ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
     scale_x_continuous(breaks = breaks,labels = label) + theme_Publication() +
     scale_fill_manual(values = mycolors,name="Cluster ID", guide=FALSE) +
     labs(x="", y="Barcode density") + coord_cartesian(expand = FALSE) +
