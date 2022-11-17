@@ -2,14 +2,21 @@
 % Please edit documentation in R/plotDynamics.R
 \name{plotDynamics}
 \alias{plotDynamics}
-\title{A plot function
-This function allows you to plot barcode dynamics (Muller-style area plot and
-log-line plot)}
+\title{A plot function}
 \usage{
 plotDynamics(raw_df, freq_treshold, cohort_name)
 }
+\arguments{
+\item{raw_df}{a dataframe produced by reshapeDF()}
+
+\item{freq_treshold}{a limit frequency above which barcodes have assigned colors}
+
+\item{cohort_name}{the sample's name}
+}
+\value{
+A plot of the barcode composition over time.
+}
 \description{
-A plot function
 This function allows you to plot barcode dynamics (Muller-style area plot and
-log-line plot)
+log-line plot).
 }

@@ -2,12 +2,18 @@
 % Please edit documentation in R/reshapeData.R
 \name{reshapeDF}
 \alias{reshapeDF}
-\title{A reshape function
-This function allows you to reshape data for plotting.}
+\title{A reshape function}
 \usage{
 reshapeDF(raw_df)
 }
+\arguments{
+\item{raw_df}{a dataframe produced by readr::read_csv}
+}
+\value{
+A reshaped dataframe for efficient plotting.
+}
 \description{
-A reshape function
-This function allows you to reshape data for plotting.
+This function allows you to reshape data for plotting. The given input is a
+long-data format with ID, Time and Reads columns. We reshape it to have a resulting
+dataframe containing  each of ID's max, start, final and mean frequencies.
 }

@@ -1,14 +1,16 @@
 #' A plot function
+#'
 #' This function allows you to plot barcode dynamics (Muller-style area plot and
-#'  log-line plot)
+#'  log-line plot).
+#'
+#' @param raw_df a dataframe produced by reshapeDF()
+#' @param freq_treshold a limit frequency above which barcodes have assigned colors
+#' @param cohort_name the sample's name
+#' @return A plot of the barcode composition over time.
 #' @import ggplot2
-#' @export
+#' @export plotDynamics
 
 plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
-
-  #raw_df = dataframes[[1]]
-  #freq_treshold = max_freq_treshold
-  #cohort_name = cohort_names[[1]]
 
   breaks = sort(c(unique(raw_df$variable)))
   label = as.character(breaks)
@@ -19,7 +21,8 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
 
   df = merge(raw_df, treshold_top_max, by = "ID",all.x = TRUE)
 
-  # for all barcodes without a universal color (barcodes with max frequencies < treshold), assign a gray hex value
+  # for all barcodes without a universal color (barcodes with max frequencies < treshold),
+  # assign a gray hex value
   df[is.na(df$hex),]$hex="#cccccc"
 
   # convert ID to factor for grouping
@@ -29,7 +32,6 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
   tf = df[order(df$max),]
 
   # subset dataframe with barcodes above a certain max frequency
-  #TODO: is this needed?
   grouped_by = magrittr::`%>%`(tf, dplyr::group_by(hex))
   filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>freq_treshold))
   grouped_tf = magrittr::`%>%`(filtered, dplyr::ungroup())
@@ -44,7 +46,8 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
 
   # plot area
   # here we plot a first geom_area with all the barcodes using the long color list
-  # then we add a new fill scale, and plot a second geom area on top of the first using only the subsetted, high-freq barcodes
+  # then we add a new fill scale, and plot a second geom area on top of the first
+  # using only the subsetted, high-freq barcodes
   g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
     ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
     scale_x_continuous(breaks = breaks,labels = label) + theme_Publication() +

@@ -1,6 +1,13 @@
 #' A fetch function
+#'
 #' This function allows you to fetch the top N barcodes per sample.
-#' @export
+#' The top N barcodes are recovered according to their maximum and final frequencies.
+#'
+#' @param reshaped_df a dataframe produced by reshapeDF()
+#' @param n_intersect number of barcodes to fetch
+#' @return A list containing 2 dataframes: top N barcodes according to their final
+#'  frequencies and top N barcodes according to their maximum frequencies.
+#' @export fetchTop
 
 fetchTop <- function(reshaped_df, n_intersect) {
   df.top = unique(reshaped_df[,1:4])

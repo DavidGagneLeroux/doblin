@@ -2,12 +2,20 @@
 % Please edit documentation in R/fetchTop.R
 \name{fetchTop}
 \alias{fetchTop}
-\title{A fetch function
-This function allows you to fetch the top N barcodes per sample.}
+\title{A fetch function}
 \usage{
 fetchTop(reshaped_df, n_intersect)
 }
+\arguments{
+\item{reshaped_df}{a dataframe produced by reshapeDF()}
+
+\item{n_intersect}{number of barcodes to fetch}
+}
+\value{
+A list containing 2 dataframes: top N barcodes according to their final
+frequencies and top N barcodes according to their maximum frequencies.
+}
 \description{
-A fetch function
 This function allows you to fetch the top N barcodes per sample.
+The top N barcodes are recovered according to their maximum and final frequencies.
 }

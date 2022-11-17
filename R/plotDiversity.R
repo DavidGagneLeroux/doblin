@@ -1,9 +1,13 @@
-#' A plot function
-#' This function allows you to plot barcode diversities for each sample.
-#' Each panel of each cohort is saved individually. Then we save a multi-panel
-#' figure with all diversities and the legend.
+#' A function to plot the diversity dynamics
+#'
+#' This function allows you to plot barcode diversities for each sample. We save
+#' a multi-panel figure with all diversities and the legend.
+#'
+#' @param dataframe a dataframe containing the barcode diversities for each sample
+#' @param cohort_names the names of each sample
+#' @return A plot of the diversity over time.
 #' @import ggplot2
-#' @export
+#' @export plotDiversity
 
 #TODO: Generalize y-scale and adjust x-scale
 #TODO: Plot each cohort individually? Add legend?
@@ -20,7 +24,7 @@ plotDiversity <- function(dataframe, cohort_names) {
               value.name = "q_value")
 
   df_diversities = ggplot(df) + geom_line(aes(Generations,log10(q_value),color=Sample),size=1.5) + geom_hline(yintercept =3,linetype="dashed") +
-    theme_Publication() + xlab("Time (post-gavage)") + scale_x_continuous(breaks = breaks,labels = label) +
+    theme_Publication() + xlab("Time") + scale_x_continuous(breaks = breaks,labels = label) +
     coord_cartesian(expand = FALSE) + scale_y_continuous(breaks=c(0,1,2,3,4,5,6),limits=c(0,6)) + scale_color_manual(values = color_palette) + guides(color = guide_legend(override.aes = list(size=8,shape=15)))
   p = df_diversities + guides(color = FALSE) + theme_Publication_noYaxis() + scale_x_continuous(breaks = breaks,labels = label,limits=limits) +
     coord_cartesian(expand = TRUE) + facet_wrap(~ q_type)

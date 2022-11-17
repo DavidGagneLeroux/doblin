@@ -2,16 +2,19 @@
 % Please edit documentation in R/plotDiversity.R
 \name{plotDiversity}
 \alias{plotDiversity}
-\title{A plot function
-This function allows you to plot barcode diversities for each sample.
-Each panel of each cohort is saved individually. Then we save a multi-panel
-figure with all diversities and the legend.}
+\title{A function to plot the diversity dynamics}
 \usage{
 plotDiversity(dataframe, cohort_names)
 }
+\arguments{
+\item{dataframe}{a dataframe containing the barcode diversities for each sample}
+
+\item{cohort_names}{the names of each sample}
+}
+\value{
+A plot of the diversity over time.
+}
 \description{
-A plot function
-This function allows you to plot barcode diversities for each sample.
-Each panel of each cohort is saved individually. Then we save a multi-panel
-figure with all diversities and the legend.
+This function allows you to plot barcode diversities for each sample. We save
+a multi-panel figure with all diversities and the legend.
 }

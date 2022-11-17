@@ -1,18 +1,24 @@
 #' A reshape function
-#' This function allows you to reshape data for plotting.
-#' @export
+#'
+#' This function allows you to reshape data for plotting. The given input is a
+#' long-data format with ID, Time and Reads columns. We reshape it to have a resulting
+#' dataframe containing  each of ID's max, start, final and mean frequencies.
+#'
+#' @param raw_df a dataframe produced by readr::read_csv
+#' @return A reshaped dataframe for efficient plotting.
+#' @export reshapeDF
 
 reshapeDF <- function(raw_df) {
 
   sample = raw_df
 
-  # reshaping from long- to wide-data format. test is a table that uses sample's IDs as IDs, sample's Time values as column variables (1@18) and sample's Reads values as table values.
-  test = reshape2::dcast(sample, ID ~ Time, value.var = 'Reads')
-  # converts a 'data.table' into a 'matrix'.
-  m = as.matrix(test[,-1])
-  # converts a 'matrix' into a 'dataframe'.
+  # "table" uses "sample"'s IDs as IDs, Time values as column variables and Reads values as table values
+  table = reshape2::dcast(sample, ID ~ Time, value.var = 'Reads')
+  # converts a 'data.table' into a 'matrix'
+  m = as.matrix(table[,-1])
+  # converts a 'matrix' into a 'dataframe'
   mat = as.data.frame(sweep(m,2,colSums(m,na.rm = TRUE),`/`))
-  mat$ID = test$ID
+  mat$ID = table$ID
   mat[,"mean"] = apply(mat[,-ncol(mat)],1, mean,na.rm=TRUE)
   mat[,"max"] = apply(mat[,-c(ncol(mat),ncol(mat)-1)],1, max,na.rm=TRUE)
   mat$start = mat[,1]
