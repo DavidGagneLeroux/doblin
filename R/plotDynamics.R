@@ -14,7 +14,6 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name) {
 
   breaks = sort(c(unique(raw_df$variable)))
   label = as.character(breaks)
-  #limits = c(min(mybreaks), max(mybreaks))
 
   treshold_top_max = treshold.top.max
   treshold_top_max$max=NULL

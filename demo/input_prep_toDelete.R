@@ -15,3 +15,13 @@ for(sample in samples) {
 
 }
 
+# Ref input file preparation
+gavage_file <- readr::read_csv(paste("~/processed_samples/Sample_Gavage_cluster.csv", sep=""))
+gavage_file$Cluster.ID = NULL
+gavage_file$Cluster.Score = NULL
+names(gavage_file)[names(gavage_file) == "Center"] <- "ID"
+names(gavage_file)[names(gavage_file) == "time_point_1"] <- "Reads"
+#colnames(Gavage.index)[4]="M5.ID" -> pour changer nom des colonnes
+write.csv(gavage_file, paste("~/Documents/ref_time0.csv",sep=""), row.names = FALSE)
+
+
