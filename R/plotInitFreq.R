@@ -11,6 +11,7 @@
 
 plotInitFreq <- function(initial_library) {
 
+  #initial_library = initial_barcode_library
   s=sum(initial_library$Reads)
   initial_library$frequency=initial_library$Reads/s
   initial_library = initial_library[order(initial_library$frequency,decreasing = TRUE),]

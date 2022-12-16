@@ -1,4 +1,4 @@
-Package: timeseriesAnalysis
+Package: doblin
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
@@ -15,9 +15,18 @@ Imports:
     readr,
     data.table,
     reshape2,
-    grDevices
+    grDevices,
+    optparse,
+    ggpubr,
+    stats,
+    imputeTS,
+    data.table,
+    dtwclust,
+    purrr,
+    tidyr,
+    TSdist
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1.9000
+RoxygenNote: 7.2.3.9000
