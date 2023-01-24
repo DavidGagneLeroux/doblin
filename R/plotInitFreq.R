@@ -7,7 +7,7 @@
 #' @import ggplot2
 #' @export plotInitFreq
 
-##TODO: Generalize the limits and breaks
+##TODO: Generalize the limits and breaks of y
 
 plotInitFreq <- function(initial_library) {
 
@@ -19,8 +19,12 @@ plotInitFreq <- function(initial_library) {
   initial.frequencies = data.frame(table(initial_library$frequency))
   initial.frequencies$Var1 = as.numeric(as.character(initial.frequencies$Var1))
 
+  breaks_x = sort(c(unique(initial_library$frequency)))
+  breaks_x <- breaks_x[seq(1, length(breaks_x), floor(length(breaks_x)/6))]
+  limits_x = c(min(breaks_x), max(breaks_x))
+
   gavage.plot = ggplot(initial.frequencies) + geom_line(aes(x=Var1,y=Freq)) +
-    scale_x_log10(limits=c(1e-7,1e-2), breaks = c(1e-7, 1e-6, 1e-5, 1e-4,1e-3, 1e-2),labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_x_log10(limits_x, breaks_x,labels = scales::trans_format("log10", scales::math_format(10^.x))) +
     scale_y_log10(limits=c(1e0,1e5), breaks = c(1e0, 1e1, 1e2, 1e3, 1e4, 1e5), labels = scales::trans_format("log10", scales::math_format(10^.x))) + theme_Publication() +
     xlab("Barcode frequency") + ylab("Number of unique barcodes") + annotation_logticks()
 

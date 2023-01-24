@@ -1,5 +1,4 @@
-#' Here we plot the running frequency correlations with initial library
-#'  for all samples.
+#' Here we plot each sample's Spearman correlation over time
 #'
 #' @param sample_corr a dataframe containing each sample's Spearman correlation over time
 #' @return A plot of the Spearman rank correlation of all samples over time

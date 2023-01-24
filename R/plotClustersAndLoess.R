@@ -44,14 +44,14 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
   series.reshaped$variable = as.numeric(as.character(series.reshaped$variable))
 
   ## Group by cluster and keep only the clusters with at least 8 members
-  series.reshaped=series.reshaped %>%  group_by(cluster) %>% dplyr::filter(length(unique(ID)) >= 8)
+  series.reshaped=series.reshaped %>%  dplyr::group_by(cluster) %>% dplyr::filter(length(unique(ID)) >= 8)
 
   ## Keep only the persistent barcodes
   series_order=subset(series.reshaped,series.reshaped$variable==max(unique(series.reshaped$variable)))
 
   series_order=series_order %>%
-    group_by(cluster) %>%
-    summarise(average = mean(value))
+    dplyr::group_by(cluster) %>%
+    dplyr::summarise(average = mean(value))
 
   series_order=series_order[order(series_order$average,decreasing = TRUE), ]
   series_order$cluster_ranked=rownames(series_order)
@@ -70,9 +70,9 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
                    "#2F4C39", "#1D3F6E","#94170f","#665679","#F17829","#97A69C","#606EA9","#A9606E","#A99060","#F8F1AE",
                    "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8")
 
-  cluster.df=series.reshaped %>%  group_by(cluster) %>%
-    summarise(value=predict(loess(log10(value+0.0000001)~variable,span=0.2),xx,se = FALSE))  %>%
-    group_by(cluster) %>% mutate(time=xx)
+  cluster.df=series.reshaped %>%  dplyr::group_by(cluster) %>%
+    dplyr::summarise(value=predict(loess(log10(value+0.0000001)~variable,span=0.2),xx,se = FALSE))  %>%
+    dplyr::group_by(cluster) %>% dplyr::mutate(time=xx)
 
   ## Plot log10-transformed barcode frequencies
   plotList = list()
@@ -88,6 +88,8 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
 
   ## Write series.reshape
   readr::write_csv(series.reshaped,file = paste(output_directory, sample_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
+
+  rm(series.reshaped)
 
   ## loesss
   cluster.df$cluster=paste("C",cluster.df$cluster,sep="")

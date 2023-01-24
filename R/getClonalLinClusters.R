@@ -20,9 +20,8 @@
 #'  for one or multiple thresholds
 #' @export get_clonal_lineage_clusters
 
-## TODO:ward.D2?
 
-get_clonal_lineage_clusters <- function(filtered_data, sample_name, linkage_method=c("average", "ward.D2", "centroid"), clustering_method=c("pearson","dtw"), covariance_method, threshold = NULL){
+get_clonal_lineage_clusters <- function(filtered_data, sample_name, linkage_method=c("average", "ward.D","ward.D2", "centroid", "single", "complete", "median", "mcquitty"), clustering_method=c("pearson","dtw"), covariance_method, threshold = NULL){
 
   #filtered_data = filtered_dataframes[[1]]
   #sample_name = cohort_names[[1]]
@@ -67,6 +66,8 @@ get_clonal_lineage_clusters <- function(filtered_data, sample_name, linkage_meth
   gplots::heatmap.2(distmat,Rowv = dend,Colv = dend,col=rev(my_palette),density.info = "none",trace = "none",
                     key.xlab="(1 - r)",cexRow = 0.5,cexCol = 0.5,LabCol=FALSE,labRow=FALSE)
   dev.off()
+
+  rm(distmat)
 
   if(is.null(threshold)){
 

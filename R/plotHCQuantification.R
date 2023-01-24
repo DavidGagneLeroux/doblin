@@ -51,9 +51,9 @@ plotHCQuantification <- function(filtered_data, sample_name, clusters){
 
   series_order=series_order %>%
     dplyr::group_by(cluster,cutoff) %>%
-    summarise(average = mean(value)) %>% ungroup() %>%
+    dplyr::summarise(average = mean(value)) %>% dplyr::ungroup() %>%
     dplyr::group_by(cutoff) %>%
-    arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
+    dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
 
   series.reshaped=merge(series.reshaped,series_order,by=c("cluster","cutoff"))
   series.reshaped$cluster=NULL
@@ -65,9 +65,11 @@ plotHCQuantification <- function(filtered_data, sample_name, clusters){
   ## Get moving average of barcode frequencies for each cluster USING LOESS
   xx <- seq(from=min(series.reshaped$variable), to=max(series.reshaped$variable),length.out = loess.range)
 
-  df=series.reshaped %>%  group_by(cluster,cutoff) %>%
-    summarise(model=predict(loess(log10(value+0.0000001)~variable,span=0.2),xx,se = FALSE))  %>%
-    group_by(cluster,cutoff) %>% mutate(time=xx)
+  df=series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>%
+    dplyr::summarise(model=predict(loess(log10(value+0.0000001)~variable,span=0.2),xx,se = FALSE))  %>%
+    dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
+
+  rm(series.reshaped)
 
   df$cluster=as.factor(as.integer(df$cluster))
   df$cutoff=as.numeric(as.character(df$cutoff))
@@ -93,6 +95,8 @@ plotHCQuantification <- function(filtered_data, sample_name, clusters){
     dplyr::group_by(cutoff) %>%
     dplyr::mutate(cluster=max(cluster),id=paste(iso1,iso2 ,sep="_")) %>%
     dplyr::summarise(dist_small=min(dist),cluster=max(cluster))
+
+  rm(distance_pairwise)
 
   scale=max(smallest_distance$dist_small)/max(smallest_distance$cluster)
 
