@@ -7,8 +7,7 @@
 \alias{calculate_q_0}
 \alias{calculate_q_1}
 \alias{calculate_q_inf}
-\title{Compute barcode diversity for all samples and create dataframes with
-diversities per cohort.}
+\title{A function to calculate a sample's diversity}
 \usage{
 calculate_diversity(data)
 
@@ -25,15 +24,16 @@ calculate_q_inf(mat)
 
 \item{sample}{input dataframe given by user}
 
-\item{mat}{matrix containing number of barcodes for each ID over each timepoint}
+\item{mat}{matrix containing number of barcodes for each ID over each time-point}
 }
 \value{
 A dataframe containing all diversity indices for a sample.
 }
 \description{
+Her, we compute barcode diversity for all samples and create dataframes with
+diversities per cohort.
 This file contains multiple functions. The main function is: calculate_diversity()
-and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf()
-which are all defined here. While calculate_q_0(), calculate_q_1() and calculate_q_inf()
-computes the diversity index for different q-values, calculate_diversity() binds the indices
-together.
+and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
+While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity
+index for different q-values, calculate_diversity() binds the indices together.
 }

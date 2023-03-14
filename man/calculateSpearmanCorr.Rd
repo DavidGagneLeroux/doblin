@@ -2,21 +2,20 @@
 % Please edit documentation in R/calculateSpearmanCorr.R
 \name{calculateSpearmanCorr}
 \alias{calculateSpearmanCorr}
-\title{Here we calculate the running frequency correlations with initial library
-for all samples.}
+\title{Spearman Correlation function}
 \usage{
 calculateSpearmanCorr(index_dataframe, sample_name)
 }
 \arguments{
 \item{index_dataframe}{dataframe returned by plotCorrelation()}
 
-\item{sample_name}{the sample's name}
+\item{sample_name}{a character string indicating the sample's name}
 }
 \value{
-A dataframe containing the running frequency correlations between a
+A dataframe containing the Spearman correlations between a
 sample and the initial library for all timepoints
 }
 \description{
-Here we calculate the running frequency correlations with initial library
-for all samples.
+Here we calculate the Spearman correlations between the initial library
+and all samples.
 }

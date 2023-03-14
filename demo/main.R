@@ -4,13 +4,13 @@
 ## ex usage: Rscript ./main.R -x 1000 -t 0.0005 -o ~/Documents/ -s M1,M2 -i ./M1_input.csv,./M2_input.csv -c 14
 
 ## Input file format: a csv file containing the barcode extraction results over 3 columns: ID, Time, Reads
-## ID: consensus sequence that identifies a group of barcodes
+## ID: consensus sequence that identifies a group of barcodes.
 ## Time: integer representing the time at which the data was measured.
-## Please make sure your time points start at least at t=1. If your input file
-## contains time points starting at t=0, extract them in a separate file.
-## This newly created file will be used as initial barcode library.
+## If your input file contains time points starting at t=0, please extract them to a separate file.
+## This newly created file requires the same format as the input file i.e. with 3 columns: ID, Time, Reads.
+## It will be used as initial barcode library.
 ## If the user doesn't have an initial barcode library, the time points should at least start at t=1.
-## Reads: number of barcodes that were computed at a certain time for a certain consensus sequence
+## Reads: number of barcodes that were counted at a certain time for a certain consensus sequence.
 
 ## Install missing packages
 list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnewscale",
@@ -20,9 +20,13 @@ list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnew
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-## Load the library
+## Load the libraries if you run main.r manually
 library(doblin)
 library(optparse)
+#library(ggplot2)
+#library(dplyr)
+#library(magrittr)
+#library(ggpubr)
 
 ## Parse arguments from command line
 options <- list(
@@ -31,26 +35,26 @@ options <- list(
   make_option(c("-o", "--outputPath"), action = "store", type="character", default=getwd(), help="Output directory [default %default]"),
   make_option(c("-s", "--sampleNames"), action = "store", type="character", help="Sample's name or ID. If multiple: use comma to separate"),
   make_option(c("-i", "--inputFiles"), action = "store", type="character", help="Input csv file . If multiple: use comma to separate"),
-  make_option(c("-c", "--timeCut"), action = "store", type="integer", help="Time point threshold (keep barcodes with at least x non-zero time points)")
+  make_option(c("-c", "--timeCut"), action = "store", type="integer", help="Time point threshold (keep barcodes with at least '-c' non-zero time points)")
 )
 arguments <- parse_args(OptionParser(option_list = options))
 
-## Test if there is at least one argument: if not, return an error
+## Test if there is at least seven arguments`: if not, return an error
 if (length(arguments)>= 7) {
 
   print("Processing the command line...")
 
   #n_intersect = 1000
   n_intersect = as.numeric(arguments$intersection)
-  #max_freq_treshold = 0.0005
-  max_freq_treshold= as.double(arguments$treshold)
+  #min_freq_treshold = 0.0005
+  min_freq_treshold= as.double(arguments$treshold)
   #output_directory = "~/Documents/"
   output_directory = arguments$outputPath
-  #cohort_names = list("M1", "M2")
+  #cohort_names = list("X1r1")
   cohort_names = as.list(strsplit(arguments$sampleNames, ",")[[1]])
-  #input_files = list("./M1_input.csv", "./M2_input.csv")
+  #input_files = list("~/Documents/modelX1_LOW_r1/modelX1_LOW_r1.csv")
   input_files = as.list(strsplit(arguments$inputFiles, ",")[[1]])
-  #time_treshold = 14
+  #time_treshold = 2
   time_treshold = as.numeric(arguments$timeCut)
 
 } else {
@@ -86,27 +90,27 @@ all.top.max = all.top.max[order(-all.top.max$max),]
 dup.vec = duplicated(all.top.max$ID)
 all.top.max = all.top.max[!dup.vec,]
 
-## we limit the selection such that all barcodes with max frequency > 0.0005 are assigned a hex color
-treshold.top.max <- all.top.max[all.top.max$max >= max_freq_treshold, ]
+## we limit the selection such that all barcodes with max frequency > '-t' are assigned a hex color
+treshold.top.max <- all.top.max[all.top.max$max >= min_freq_treshold, ]
 
 ## we create a very long list of colors for low-frequency barcodes.
-## repetition of colors isn't an issue, we just want each barcodes to be colored instead of assigning gray values
-top_colors <- readr::read_csv("../inst/extdata/top_colors2.csv")
+top_colors <- readr::read_csv("./inst/extdata/top_colors2.csv")
 long.color.list = rep(top_colors$hex,50)
 long.color.list.random = sample(long.color.list)
 
-## As a result, all top max frequencies > treshold are assigned a hex color
+## As a result, all top max frequencies > '-t' are assigned a hex color
 top_colors = top_colors[1:length(treshold.top.max[[1]]),]
 treshold.top.max = cbind(treshold.top.max,top_colors)
 
 ## Step 4: Plot dynamics
 print("Plotting the dynamics...")
 cat("Regarding the dynamics, do you want a linear model, a logarithmic model or both? (linear, log or both): ")
-#plot_choice <- "log"
+#plot_choice <- "both"
 plot_choice <- readLines("stdin", n=1)
-#TODO: Handle multiple labels?
+plot_choice <- match.arg(plot_choice, c("log", "linear", "both"))
+
 for(i in 1:length(dataframes)) {
-  plotDynamics(dataframes[[i]], max_freq_treshold, cohort_names[[i]], plot_choice)
+  plotDynamics(dataframes[[i]], min_freq_treshold, cohort_names[[i]], plot_choice)
   }
 
 ## Step 5: Calculate diversity
@@ -126,9 +130,10 @@ plotDiversity(sample_diversities, cohort_names)
 cat("Do you have an initial barcode library (y/n) : ")
 #exist_library <- "y"
 exist_library <- readLines("stdin", n=1)
+
 if(exist_library == "y"){
   cat("Enter your reference file (ex: {path_to_file}/ref_file.csv) : ")
-  #ref_file <- "./ref_time0.csv"
+  #ref_file <- "./demo/ref_time0.csv"
   ref_file <- readLines("stdin", n=1)
   ## 7.1: Plot the barcode frequencies from the initial library.
   initial_barcode_library <- readr::read_csv(ref_file)
@@ -137,7 +142,7 @@ if(exist_library == "y"){
   colnames(barcode_library)[2]="Reads_time0"
   initial_barcode_library_topN = initial_barcode_library[1:n_intersect,]
 
-  ## 7.2: Create a running scatterplot of each sample's barcode frequencies
+  ## 7.2: Create a scatter-plot of each sample's barcode frequencies
   ## at all time points vs the barcode frequencies at time 0.
   sample_indices <- list()
   for(i in 1:length(input_data)) {
@@ -145,7 +150,7 @@ if(exist_library == "y"){
     sample_indices <- append(sample_indices, list(sample_index))
   }
 
-  ## 7.3: Calculate the running frequency correlations with initial library for all samples
+  ## 7.3: Calculate the Spearman correlations between the initial library and all samples
   ## and plot the result.
 
   sample_correlations <- list()
@@ -156,7 +161,7 @@ if(exist_library == "y"){
   sample_correlations <- do.call(rbind, sample_correlations)
   plotSpearmanCorr(sample_correlations)
 
-  ## Step 8: Jaccard Index
+  ## Step 8: Calculate the Jaccard Index between the initial library and all samples
   plotJaccardIndex(top_final, top_max, initial_barcode_library_topN, cohort_names)
 
 
@@ -167,49 +172,66 @@ if(exist_library == "y"){
   stop("Error: Incorrect input")
 }
 
-##############################################
 ## Step 9: Clustering
 print("Clustering")
 ## 9.1: Filtering data
 print("Filtering input data...")
 
+cat("Enter a minimum mean frequency below which the data is not retained (ex: 0.00005): ")
+#freq_filter_threshold=0.00005
+freq_filter_threshold <- as.numeric(readLines("stdin", n=1))
+
 filtered_dataframes <- list()
 for(i in 1:length(input_data)) {
-  filtered_df <- filterData(input_data[[i]], time_treshold, cohort_names[[i]])
+  filtered_df <- filterData(input_data[[i]], freq_filter_threshold, time_treshold, cohort_names[[i]])
   filtered_dataframes <- append(filtered_dataframes, list(filtered_df))
 }
 
 ## 9.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
-cat("Enter a linkage method (methods from https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust ): ")
+cat("Enter a linkage method (ex: average): ")
 #linkage <- "average"
 linkage <- readLines("stdin", n=1)
+
 cat("Enter a clustering method (pearson or dtw) : ")
 #clustering <- "pearson"
 clustering <- readLines("stdin", n=1)
-cat("Enter a method to compute the covariance (ex: pairwise.complete.obs) : ")
-#covariance <- "pairwise.complete.obs"
-covariance <- readLines("stdin", n=1)
-
-for(i in 1:length(filtered_dataframes)) {
-  clusters_df = get_clonal_lineage_clusters(filtered_dataframes[[i]], cohort_names[[i]], linkage, clustering, covariance)
-  plotHCQuantification(filtered_dataframes[[i]], cohort_names[[i]], clusters_df)
+clustering <- match.arg(clustering, c("pearson","dtw"))
+if (clustering=="pearson") {
+  cat("Enter a method to compute the covariance (ex: pairwise.complete.obs) : ")
+  #covariance <- "pair"
+  covariance <- readLines("stdin", n=1)
+  covariance <- match.arg(covariance, c("everything","all.obs","complete.obs","na.or.complete","pairwise.complete.obs"))
+}else{
+  covariance = NULL
 }
 
-## breaks are essential for plots
+
+print("Computing the relative clusters for ALL thresholds between 0.1 and max height of HC... ")
+for(i in 1:length(filtered_dataframes)) {
+  clusters_df = perform_hierarchical_clustering(filtered_dataframes[[i]], cohort_names[[i]], linkage, clustering, covariance)
+
+  cat(paste("Enter the minimum number of members per cluster for", cohort_names[[i]], ": "))
+  #min_members <-8
+  min_members <- as.numeric(readLines("stdin", n=1))
+
+  plotHCQuantification(filtered_dataframes[[i]], clusters_df, cohort_names[[i]], min_members)
+}
+
 breaks <- list()
 for(i in 1:length(input_data)){
   breaks <-append(breaks, list(sort(c(unique(input_data[[i]]$Time)))))
 }
 
-#selected_threshold = as.numeric(readline(prompt = "Enter the chosen threshold : "))
-cat("Enter the chosen threshold : ")
-#selected_threshold <-0.5
-selected_threshold <- as.numeric(readLines("stdin", n=1))
+
 
 for(i in 1:length(filtered_dataframes)) {
 
-  selected_clusters = get_clonal_lineage_clusters(filtered_dataframes[[i]], cohort_names[[i]], linkage, clustering, covariance, selected_threshold)
-  plot_clusters_and_loess(filtered_dataframes[[i]], selected_clusters, cohort_names[[i]], breaks[[i]])
+  cat(paste("Enter the chosen threshold for", cohort_names[[i]], ": "))
+  #selected_threshold <-0.35
+  selected_threshold <- as.numeric(readLines("stdin", n=1))
+
+  selected_clusters = perform_hierarchical_clustering(filtered_dataframes[[i]], cohort_names[[i]], linkage, clustering, covariance, selected_threshold)
+  plot_clusters_and_loess(filtered_dataframes[[i]], selected_clusters, cohort_names[[i]], breaks[[i]], min_members)
 }
 

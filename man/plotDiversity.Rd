@@ -9,7 +9,7 @@ plotDiversity(dataframe, cohort_names)
 \arguments{
 \item{dataframe}{a dataframe containing the barcode diversities for each sample}
 
-\item{cohort_names}{the names of each sample}
+\item{cohort_names}{a list containing the names of each sample}
 }
 \value{
 A plot of the diversity over time.

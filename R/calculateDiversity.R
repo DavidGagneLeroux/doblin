@@ -1,16 +1,16 @@
-#' Compute barcode diversity for all samples and create dataframes with
-#' diversities per cohort.
+#' A function to calculate a sample's diversity
 #'
+#' Her, we compute barcode diversity for all samples and create dataframes with
+#' diversities per cohort.
 #' This file contains multiple functions. The main function is: calculate_diversity()
-#' and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf()
-#' which are all defined here. While calculate_q_0(), calculate_q_1() and calculate_q_inf()
-#' computes the diversity index for different q-values, calculate_diversity() binds the indices
-#' together.
+#' and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
+#' While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity
+#' index for different q-values, calculate_diversity() binds the indices together.
 #'
 #' @name calculateDiversity
 #' @param data reshaped data produced by format_sample()
 #' @param sample input dataframe given by user
-#' @param mat matrix containing number of barcodes for each ID over each timepoint
+#' @param mat matrix containing number of barcodes for each ID over each time-point
 #' @return A dataframe containing all diversity indices for a sample.
 #' @export calculate_diversity
 
@@ -48,7 +48,7 @@ format_sample <- function(sample){
 
 #################
 
-# CALCULATE DIVERSITY (q = 0): number of lineages with nonzero frequency (species richness)
+## CALCULATE DIVERSITY (q = 0): number of lineages with nonzero frequency (species richness)
 #' @export
 #' @rdname calculateDiversity
 
@@ -64,7 +64,7 @@ calculate_q_0 <- function(mat) {
 
 #################
 
-# CALCULATE DIVERSITY (q = 1): Shannon diversity - all lineages weighted by their frequencies
+## CALCULATE DIVERSITY (q = 1): Shannon diversity - all lineages weighted by their frequencies
 #' @export
 #' @rdname calculateDiversity
 
@@ -79,7 +79,8 @@ calculate_q_1 <- function(mat) {
 
 #################
 
-# CALCULATE DIVERSITY (q = infinity): reciprocal of the maximum lineage frequency - (entropy) gives information about the contribution of the most abundant lineage on diversity
+## CALCULATE DIVERSITY (q = infinity): reciprocal of the maximum lineage frequency
+## (entropy) gives information about the contribution of the most abundant lineage on diversity
 #' @export
 #' @rdname calculateDiversity
 

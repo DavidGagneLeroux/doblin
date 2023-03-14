@@ -25,29 +25,71 @@ knitr::opts_chunk$set(
   
 ```
 
-## 1. *doblin* Package
+## Table of Contents
 
-The *doblin* package is intended to be a comprehensive toolbox to understand how clonal populations of cells evolve over time. It was developed for the analysis of dominant barcode lineage data resulting from *Next Generation Sequencing* (NGS). In combination with functionalities needed for data analysis, it offers a variety of visualizations.
+### [1. *doblin* Package](#doblin-package-1)
 
-## 1.1 Barcode extraction from the FASTQ/FASTA file and determining putative “true” lineages
+\hspace{0.5cm}
 
-This subsection is specifically for users with sequencing data who haven’t yet perform barcode extraction. Prior to analysis, you must identify and extract the barcode sequences from your raw sequencing data. *Bartender* is a usefull tool to process barcode data (https://github.com/LaoZZZZZ/bartender-1.1). 
+[1.1 Barcode extraction from the FASTQ/FASTA file]
 
+\hspace{0.5cm}
 
-At this point, it is primordial to format your data as follows:
+[1.2 Dependencies]
 
-Input file format: a csv file containing the barcode extraction results over 3 columns: ID, Time, Reads.
+\hspace{0.5cm}
 
-ID: consensus sequence that identifies a group of barcodes.
+[1.3 Parsing arguments from the command line]
 
-Time: integer representing the time at which the data was measured. If the file contains time points starting at 0, we extract the associated values to produce an initial barcode library. If the user doesn't have an initial barcode library, the time points should at least start at t=1.
+### [2. The pipeline](#the-pipeline-1)
 
-Reads: number of barcodes that were computed at a certain time for a certain consensus sequence.
+\hspace{0.5cm}
 
+[2.1 Data preparation]
+
+\hspace{0.5cm}
+
+[2.2 Visualizing barcode dynamics]
+
+\hspace{0.5cm}
+
+[2.3 Quantification of barcode diversity]
+
+\hspace{0.5cm}
+
+[2.4 Correlation between dataset and initial barcode library]
+
+\hspace{0.5cm}
+
+[2.5 Barcode lineage clustering]
+
+\pagebreak
+
+## 1. *doblin* Package {#doblin-package-1}
+
+The *doblin* package is intended to be a comprehensive toolbox to understand how clonal populations of cells evolve over time. It was developed for the analysis of dominant and persistent barcode lineage data resulting from *Next Generation Sequencing* (NGS). In combination with functionalities needed for data analysis, the package offers a variety of visualizations.
+
+## 1.1 Barcode extraction from the FASTQ/FASTA file
+
+This subsection is specifically for users with sequencing data who haven't yet perform barcode extraction. Prior to analysis, the user must identify and extract the barcode sequences from his raw sequencing data. *Bartender* is a useful tool to process barcode data (\underline{https://github.com/LaoZZZZZ/bartender-1.1}).
+
+Once the barcodes have been extracted, it is primordial to format the data as follows:
+
+```{=tex}
+\begin{itemize}
+\item Input file format: a csv file containing the barcode extraction results over \textbf{3 columns}: ID, Time, Reads.
+\begin{description}
+\item[ID:] consensus sequence that identifies a group of barcodes.
+
+\item[Time:] integer representing the time at which the data was measured. If the input file contains time points starting at t=0, please extract them to a separate file. This newly created file requires the same format as the input file i.e. with 3 columns: ID, Time, Reads. It will be used as an initial barcode library. If the user doesn't have an initial barcode library, the time points should at least start at t=1.
+
+\item[Reads:] number of barcodes that were counted at a certain time for a certain consensus sequence.
+\end{description}
+\end{itemize}
+```
 ## 1.2 Dependencies
 
-If the necessary packages aren't already installed on your system, you should install them before running the following pipeline. 
-
+If the necessary packages aren't already installed on your system, please install them before running the following pipeline.
 
 ```{r eval=FALSE, collapse=TRUE}
   list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr",
@@ -61,18 +103,21 @@ If the necessary packages aren't already installed on your system, you should in
 
 ```
 
-After loading the package with the `library("doblin")` command, the entire functionality of the package can be accessed. 
+After loading the package with the `library("doblin")` command, the entire functionality of the package can be accessed.
 
 \pagebreak
 
 ## 1.3 Parsing arguments from the command line
 
-In order to use this pipeline, you must run a command line of the following form: `Rscript doblin/demo/main.R -x 1000 -t 0.0005 -o {output_directory} -s {sample_name} -i {sample_file} -c 14`.
+NOTE: Before running the command line, make sure to set your working directory to the `doblin` folder!
 
-Example: 
+In order to use the following pipeline, a command line of the following form must be written:
 
-`Rscript ./main.R -x 1000 -t 0.0005 -o ~/Documents/ -s M1,M2 -i ./M1_input.csv,./M2_input.csv -c 14`
+`Rscript ./demo/main.R -x 1000 -t 0.0005 -o {output_directory} -s {sample_name} -i {sample_file} -c 14`
 
+Example using 2 samples (M1 and M2):
+
+`Rscript ./demo/main.R -x 1000 -t 0.0005 -o ~/Documents/ -s M1,M2 -i ./demo/M1_input.csv,./demo/M2_input.csv -c 14`
 
 ```{r eval=FALSE, collapse=TRUE}
 library(doblin)
@@ -117,7 +162,7 @@ if (length(arguments)>= 7) {
 
 \pagebreak
 
-## 2. The pipeline
+## 2. The pipeline {#the-pipeline-1}
 
 ## 2.1 Data preparation
 
@@ -127,8 +172,7 @@ print("Processing CSV files...")
 input_data <- lapply(input_files, readr::read_csv)
 ```
 
-As described earlier, the given input is a long-data format with ID, Time and Reads columns. After processing it, we reshape the input into a long-format dataframe in order to highlight the initial, final, mean and maximum frequencies of each barcode. This allows us to retrieve the dominant barcodes. We fetch the top N - where N is the `-x` argument given by the user (default: 1000) - barcodes of each sample according to their final and maximum frequency.
-
+As described earlier, the given input is a long-data format with ID, Time and Reads columns. After processing the input, we reshape it into a long-format dataframe in order to highlight the initial, final, mean and maximum frequencies of each barcode. This allows us to retrieve the dominant barcodes. We fetch the top N - where N is the `-x` argument given by the user (default: 1000) - barcodes of each sample according to their final and maximum frequencies.
 
 ```{r eval=FALSE, collapse=TRUE}
 ## Step 1: Reshape input files into dataframes
@@ -148,10 +192,12 @@ for(element in x){
   top_max <- append(top_max, element[2])
 }
 ```
+
 \pagebreak
+
 ## 2.2 Visualizing barcode dynamics
 
-To compare barcode trajectories within and between samples, we aimed to use consistent color coding for barcode lineages. First, we assigned a unique color to all lineages that reached a relative frequency - specified by the `-t` argument given by the user (default: 0.0005). For example, a barcode lineage that was assigned the color “magenta [#c20078]” will always have this color in all the figures. Conversely, no other barcode was assigned the same color. To create the Muller-type plots, the barcode frequencies at every time point were represented in linear scale. For each sample, the barcodes are sorted by the maximum frequency they attained over the time-series. This produced a stacked area plot where dominant barcodes are shown starting from the bottom of the panel and progressively lower-frequency barcodes are shown at the top. The same data was used to plot the frequency trajectories in log10-transformation. Barcodes that reached the minimum frequency (`-t`)  throughout its time-series are shown in color, whereas the remaining barcodes are shown in grey for clarity.
+To compare barcode trajectories within and between samples, we aimed to use consistent color coding for barcode lineages. First, we assigned a unique color to all lineages that reached a relative frequency - specified by the `-t` argument in the command line (default: 0.0005). For example, a barcode lineage that was assigned the color "magenta [#c20078]" will always have this color in all the figures. Conversely, no other barcode was assigned the same color. To create the Muller-type plots, the barcode frequencies at every time point were represented in linear scale (Figure 2). For each sample, the barcodes are sorted by the maximum frequency they attained over the time-series. This produced a stacked area plot where dominant barcodes are shown starting from the bottom of the panel and progressively lower-frequency barcodes are shown at the top. The same data is used to plot the frequency trajectories in log10-transformation (Figure 1). Barcodes that reached the minimum frequency (`-t`) throughout its time-series are shown in color, whereas the remaining barcodes are shown in grey for clarity.
 
 ```{r eval=FALSE, collapse=TRUE}
 ## Step 3: Color assignment for plotting
@@ -169,7 +215,7 @@ all.top.max = all.top.max[!dup.vec,]
 treshold.top.max <- all.top.max[all.top.max$max >= max_freq_treshold, ]
 
 ## we create a very long list of colors
-top_colors <- readr::read_csv("../inst/extdata/top_colors2.csv")
+top_colors <- readr::read_csv("./inst/extdata/top_colors2.csv")
 long.color.list = rep(top_colors$hex,50)
 long.color.list.random = sample(long.color.list)
 
@@ -184,24 +230,33 @@ Before plotting the dynamics, we allow the user to choose if he wants only the l
 ```{r eval=FALSE, collapse=TRUE}
 ## Step 4: Plot dynamics
 print("Plotting the dynamics...")
-cat("Regarding the dynamics, do you want a linear model, a logarithmic model or both? (linear, log or both): ")
-#plot_choice <- "log"
+cat("Regarding the dynamics, do you want a linear model, a logarithmic model or both? 
+    (linear, log or both): ")
 plot_choice <- readLines("stdin", n=1)
-#TODO: Handle multiple labels?
+
 for(i in 1:length(dataframes)) {
   plotDynamics(dataframes[[i]], max_freq_treshold, cohort_names[[i]], plot_choice)
   }
 
 ```
 
+```{r, out.width = "50%", fig.align='center', fig.cap='Frequency trajectories in log10-transformation'}
+  knitr::include_graphics("./images/M1_area.jpeg")
+  
+```
+
+```{r, out.width = "50%", fig.align='center', fig.cap='Frequency trajectories in linear scale'}
+  knitr::include_graphics("./images/M1_line.jpeg")
+  
+```
+
 \pagebreak
+
 ## 2.3 Quantification of barcode diversity
 
-The simplest way to quantify the diversity of barcoded lineages in a population is to count the number of unique barcodes observed at a particular time point. However, if lineages differ widely in frequency, then this measure may not be very informative and will suffer from substantial sampling bias (since very low-frequency barcodes will be under-sampled). A more general approach is to quantify the diversity of barcodes using the effective diversity index. When q = 0, the index simply counts the absolute diversity in the sample, i.e., the total number of unique barcode lineage. This measure is equivalent to the species richness used in ecological studies. When q = 1, the index weights each barcode lineage by its frequency. This measure is equivalent to the exponential of the Shannon entropy H.
+The simplest way to quantify the diversity of barcoded lineages in a population is to count the number of unique barcodes observed at a particular time point. However, if lineages differ widely in frequency, then this measure may not be very informative and will suffer from substantial sampling bias (since very low-frequency barcodes will be under-sampled). A more general approach is to quantify the diversity of barcodes using the effective diversity index.
 
-
-When q → $\infty$, the index is equal to the reciprocal of the proportional abundance of the most common barcode lineages. Thus, only the higher-frequency lineages contribute to the value of this index. By comparing the diversity index across these three orders for q, we can describe the complex dynamics of the barcode composition over time. In the trivial case when all barcode frequencies were equal, the effective diversity index would be equal to the absolute number of barcodes regardless of the order of q. We should expect absolute diversity (q = 0) to be no greater than the maximum theoretical diversity of the barcode library.
-
+When q = 0, the index simply counts the absolute diversity in the sample, i.e., the total number of unique barcode lineage. This measure is equivalent to the species richness used in ecological studies. When q = 1, the index weights each barcode lineage by its frequency. This measure is equivalent to the exponential of the Shannon entropy H. When q → $\infty$, the index is equal to the reciprocal of the proportional abundance of the most common barcode lineages. Thus, only the higher-frequency lineages contribute to the value of this index. By comparing the diversity index across these three orders for q, we can describe the complex dynamics of the barcode composition over time (Figure 3). In the trivial case when all barcode frequencies were equal, the effective diversity index would be equal to the absolute number of barcodes regardless of the order of q. We should expect absolute diversity (q = 0) to be no greater than the maximum theoretical diversity of the barcode library.
 
 ```{r eval=FALSE, collapse=TRUE}
 ## Step 5: Calculate diversity
@@ -222,72 +277,117 @@ plotDiversity(sample_diversities, cohort_names)
 
 ```
 
+```{r, out.width = "50%", fig.align='center', fig.cap='Barcode diversities using diversity indexes accross q orders'}
+  knitr::include_graphics("./images/M1M2_diversity.jpeg")
+  
+```
+
 \pagebreak
 
-## 2.4 Spearman Correlation (for dataset containing an initial library)
+## 2.4 Correlation between dataset and initial barcode library
 
-If the user provided an initial library, he has the possibility to extend his analysis by quantifying the evolution of his dataset compared to the given library. First, we create a plot in order to visualize the barcode frequencies from the initial library. Another useful tool is the scatter plot we use to visualize the correlation between the barcode frequencies at all time points and the barcode frequencies at time 0. The Jaccard similarity index, which compares members from two sets to see which members are shared and which are distinct, can also be computed. The higher the percentage of that index, the more similar the two sets are. 
+If the user provided an initial barcode library, he has the possibility to extend his analysis by quantifying the evolution of his dataset compared to the given library. Multiple tools are used for that comparison:
 
+```{=tex}
+\begin{itemize}
+\item First, we create a plot in order to visualize the barcode frequencies from the initial library (Figure 4). This step is simply to learn about the library's composition;
+\item Second, we create a scatter plot in order to visualize the correlation between the barcode frequencies at all time points and the barcode frequencies at time 0 (Figure 5); 
 
+\item Combined with the previous step, we compute a Spearman's correlation coefficient and a Jaccard similarity index to quantify the relationship between the dataset and the initial barcode library (Figures 6-7). As a reminder, the Jaccard similarity index compares members from two sets to see which members are shared and which are distinct.The higher the percentage of that index, the more similar the two sets are.
+
+\end{itemize}
+```
+```{r eval=FALSE, collapse=TRUE}
+## Step 7: Correlation between dataset and initial library
+cat("Do you have an initial barcode library (y/n) : ")
+exist_library <- readLines("stdin", n=1)
+
+if(exist_library == "y"){
+  
+  cat("Enter your reference file (ex: {path_to_file}/ref_file.csv) : ")
+  ref_file <- readLines("stdin", n=1)
+  
+  ## 7.1: Plot the barcode frequencies from the initial library.
+  initial_barcode_library <- readr::read_csv(ref_file)
+  barcode_library <- plotInitFreq(initial_barcode_library)
+  barcode_library$Time = NULL
+  colnames(barcode_library)[2]="Reads_time0"
+  initial_barcode_library_topN = initial_barcode_library[1:n_intersect,]
+```
+
+```{r, out.width = "50%", fig.align='center', fig.cap='Barcode frequencies from initial library'}
+  knitr::include_graphics("./images/library_frequency_spectrum.jpeg")
+  
+```
 
 ```{r eval=FALSE, collapse=TRUE}
-## Step 7: Spearman Correlation
-sample_indices <- list()
-for(i in 1:length(input_data)){
-  if (any(input_data[[i]]$Time == 0)){
 
-    ## 7.1: Plot the barcode frequencies from the initial library.
-    initial_barcode_library <- input_data[[i]][input_data[[i]]$Time == 0,]
-    input_data[[i]] = input_data[[i]][input_data[[i]]$Time != 0,]
-    barcode_library <- plotInitFreq(initial_barcode_library)
-    barcode_library$Time = NULL
-    colnames(barcode_library)[2] <- "Reads_time0"
-    initial_barcode_library_topN = initial_barcode_library[1:n_intersect,]
-
-    ## 7.2: Create a scatter plot
-    #plotCorrelation(input_data[[1]], barcode_library, cohort_names[[1]])
+  ## 7.2: Create a scatter-plot of each sample's barcode frequencies
+  ## at all time points vs the barcode frequencies at time 0.
+  sample_indices <- list()
+  for(i in 1:length(input_data)) {
     sample_index <- plotCorrelation(input_data[[i]], barcode_library, cohort_names[[i]])
     sample_indices <- append(sample_indices, list(sample_index))
-
-    ## Step 8: Jaccard Index
-    #TODO: Do we really want one Jaccard plot per sample? It doesn't make sense to move the function outside
-    # the "if" condition
-    plotJaccardIndex(top_final[i], top_max[i], initial_barcode_library_topN, cohort_names[[i]])
   }
-}
-
 ```
 
-Finally, we compute and plot the Spearman's correlation between a given sample and the initial library for all time points.
-
+```{r, out.width = "50%", fig.align='center', fig.cap='Time-frequency comparison between dataset and initial library'}
+  knitr::include_graphics("./images/M1_grid.png")
+  
+```
 
 ```{r eval=FALSE, collapse=TRUE}
-## 7.3: Calculate the running frequency correlations with initial library for all samples
-## and plot the result.
+  ## 7.3: Calculate the Spearman correlations between the initial library and all samples
+  ## and plot the result.
+  sample_correlations <- list()
+  for(i in 1:length(sample_indices)) {
+    sample_corr <- calculateSpearmanCorr(sample_indices[[i]], cohort_names[[i]])
+    sample_correlations <- append(sample_correlations, list(sample_corr))
+  }
+  sample_correlations <- do.call(rbind, sample_correlations)
+  plotSpearmanCorr(sample_correlations)
+```
 
-sample_correlations <- list()
-for(i in 1:length(sample_indices)) {
-  sample_corr <- calculateSpearmanCorr(sample_indices[[i]], cohort_names[[i]])
-  sample_correlations <- append(sample_correlations, list(sample_corr))
-}
-sample_correlations <- do.call(rbind, sample_correlations)
-plotSpearmanCorr(sample_correlations)
+```{r, out.width = "50%", fig.align='center', fig.cap="Spearman's correlation coefficients between dataset and initial library"}
+  knitr::include_graphics("./images/spearman_series.png")
+  
+```
+
+```{r eval=FALSE, collapse=TRUE}
+  ## Step 8: Calculate the Jaccard Index between the initial library and all samples
+  plotJaccardIndex(top_final, top_max, initial_barcode_library_topN, cohort_names)
 
 ```
+
+```{r, out.width = "50%", fig.align='center', fig.cap='Jaccard similarity indexes'}
+  knitr::include_graphics("./images/jaccard_max.jpeg")
+  
+```
+
 \pagebreak
 
 ## 2.5 Barcode lineage clustering
 
-To identify the clonal lineages, we cluster the barcode lineages for each sample based on the similarity of their time series behavior. To maximize the accuracy of this clustering, we exclude barcodes with insufficient time points (the `-c` argument). This ensures that all barcode lineages included in the clustering have a sufficient number of points for pairwise comparison. This procedure means that the lineage clustering focuses on dominant and persistent clones; barcodes that immediately went to extinction were excluded. 
+To identify the clonal lineages, we cluster the barcode lineages for each sample based on the similarity of their time series behavior. To maximize the accuracy of this clustering, we exclude barcodes with insufficient time points (the `-c` argument in the command line). This ensures that all barcode lineages included in the clustering have a sufficient number of points for pairwise comparison. This procedure means that the lineage clustering focuses on dominant and persistent clones; barcodes that immediately went to extinction were excluded.
 
-We compute the distance matrix according to the clustering method given by the user - Pearson or dtw - and perform a hierarchical clustering. The user can choose a linkage method among those presented in the r documentation (https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust). As an example, the “average” agglomerative clustering method implements the algorithm Unweighted Pair Group Method with Arithmetic mean (UPGMA). This method computes the distance between two clusters as the arithmetic mean of the distances between all lineages in both clusters. Then, for each cluster, we fit a consensus trajectory using the local regression (loess). Loess is a form of moving average where a line is fit locally using neighboring points weighted by their distance from the current point.
+We compute the distance matrix according to the clustering method given by the user - Pearson or dtw - and perform a hierarchical clustering (Figure 8). The user can choose a linkage method among those presented in the r documentation (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust}). As an example, the *average* linkage method implements the algorithm *Unweighted Pair Group Method with Arithmetic mean* (UPGMA). This method computes the distance between two clusters as the arithmetic mean of the distances between all lineages in both clusters. The user also needs to specify a method for computing covariances in the presence of missing values. Please refer to the r documentation to view the possible options (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/cor}). Then, for each cluster, we fit a consensus trajectory using the local regression (loess). Loess is a form of moving average where a line is fit locally using neighboring points weighted by their distance from the current point.
 
-To determine the optimal clustering threshold, we note two general trends. First, the loess of clusters with very few lineages will be sensitive to sequencing error. Second, when the threshold is too small, there are many clusters, but multiple clusters are similar to each other. Third, when the threshold is too large, there are very few clusters where barcodes with distinct dynamics are grouped together. In clustering, the practice is to find the cross-over between the smallest distance between cluster centroids (our loess average) and the number of clusters.
+To determine the optimal clustering threshold, we note three general trends:
+
+```{=tex}
+\begin{itemize}
+\item First, the loess of clusters with very few lineages will be sensitive to sequencing error;
+\item Second, when the threshold is too small, there are many clusters, but multiple clusters are similar to each other;
+\item Third, when the threshold is too large, there are very few clusters where barcodes with distinct dynamics are grouped together.
+\end{itemize}
+```
+In clustering, the practice is to find the cross-over between the smallest distance between cluster centroids - our loess average - and the number of clusters (Figure 9).
 
 ```{r eval=FALSE, collapse=TRUE}
 
 ## Step 9: Clustering
 print("Clustering")
+
 ## 9.1: Filtering data
 print("Filtering input data...")
 
@@ -299,16 +399,21 @@ for(i in 1:length(input_data)) {
 
 ## 9.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
-cat("Enter a linkage method (methods from
-    https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust ): ")
-#linkage <- "average"
+cat("Enter a linkage method (ex: average): ")
 linkage <- readLines("stdin", n=1)
+
 cat("Enter a clustering method (pearson or dtw) : ")
-#clustering <- "pearson"
 clustering <- readLines("stdin", n=1)
+
 cat("Enter a method to compute the covariance (ex: pairwise.complete.obs) : ")
-#covariance <- "pairwise.complete.obs"
 covariance <- readLines("stdin", n=1)
+
+```
+
+In order to find that cross-over, we compute the relative clusters for all thresholds between 0.1 and the maximum height of the hierarchical clustering. This step allows the user to visualize the possible clusters and make an informed choice about which threshold to use.
+
+```{r eval=FALSE, collapse=TRUE}
+print("Computing the relative clusters for ALL thresholds...")
 
 for(i in 1:length(filtered_dataframes)) {
   clusters_df = get_clonal_lineage_clusters(filtered_dataframes[[i]], cohort_names[[i]],
@@ -316,15 +421,27 @@ for(i in 1:length(filtered_dataframes)) {
   plotHCQuantification(filtered_dataframes[[i]], cohort_names[[i]], clusters_df)
 }
 
-## breaks are essential for plots
 breaks <- list()
 for(i in 1:length(input_data)){
   breaks <-append(breaks, list(sort(c(unique(input_data[[i]]$Time)))))
 }
 
-#selected_threshold = as.numeric(readline(prompt = "Enter the chosen threshold : "))
+```
+
+```{r, out.width = "50%", fig.align='center', fig.cap="Clustering following DTW's approach"}
+  knitr::include_graphics("./images/M1_dtw.png")
+  
+```
+
+```{r, out.width = "50%", fig.align='center', fig.cap='Cross-over between the smallest distance and the number of clusters'}
+  knitr::include_graphics("./images/M1_threshold_selection.png")
+  
+```
+
+At this point, the user should have all the tools to choose a relevant threshold. Once done, we re-perform a clustering with the chosen threshold and model the local composition of each cluster i.e. frequencies of their respective barcodes over time (Figure 10) as well as the general composition of each sample i.e. each cluster's loess over time (Figure 11).
+
+```{r eval=FALSE, collapse=TRUE}
 cat("Enter the chosen threshold : ")
-#selected_threshold <-0.5
 selected_threshold <- as.numeric(readLines("stdin", n=1))
 
 for(i in 1:length(filtered_dataframes)) {
@@ -338,3 +455,12 @@ for(i in 1:length(filtered_dataframes)) {
 
 ```
 
+```{r, out.width = "50%", fig.align='center', fig.cap='Local composition of cluster 1'}
+  knitr::include_graphics("./images/M1_cluster1_log10.jpeg")
+  
+```
+
+```{r, out.width = "50%", fig.align='center', fig.cap='General composition of a multi-cluster sample'}
+  knitr::include_graphics("./images/M1_loess_clusters_log10.jpeg")
+  
+```

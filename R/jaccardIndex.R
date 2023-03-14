@@ -53,7 +53,7 @@ plotJaccardIndex <- function(topFinal, topMax, library_topN, names){
                                   frame.linewidth = 2,draw.llim = TRUE)) +
     coord_cartesian(expand = FALSE) + theme_Matrix() + ggtitle("Top N barcodes by final frequency")
 
-  ggsave(plot.final,filename = paste(output_directory,"jaccard_final.eps", sep=""),width = 9,height = 8, device =cairo_ps())
+  ggsave(plot.final,filename = paste(output_directory,"jaccard_final.jpeg", sep=""),width = 9,height = 8, device ="jpeg")
 
 
   plot.max = ggplot(matMax, aes(Var1, Var2, fill = value)) + geom_tile() + xlab("") + ylab("") +
@@ -62,7 +62,7 @@ plotJaccardIndex <- function(topFinal, topMax, library_topN, names){
                                   title = "Jaccard index",ticks.linewidth = 2,frame.linewidth = 2,draw.llim = TRUE)) +
     coord_cartesian(expand = FALSE) + theme_Matrix() + ggtitle("Top N barcodes by max frequency")
 
-  ggsave(plot.max,filename =  paste(output_directory,"jaccard_max.eps", sep=""),width = 9,height = 8, device =cairo_ps())
+  ggsave(plot.max,filename =  paste(output_directory,"jaccard_max.jpeg", sep=""),width = 9,height = 8, device ="jpeg")
 
 
 }

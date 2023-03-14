@@ -1,20 +1,24 @@
 #' A plot function
 #'
-#' This function allows you to plot barcode dynamics (Muller-style area plot and
-#'  log-line plot).
+#' This function allows you to plot barcode dynamics (linear plot and
+#'  log-transformed plot).
 #'
 #' @param raw_df a dataframe produced by reshapeDF()
-#' @param freq_treshold a limit frequency above which barcodes have assigned colors
+#' @param freq_treshold a double representing a limit frequency above which barcodes have assigned colors
 #' @param cohort_name a character string indicating the sample's name
 #' @param plot_model a character string indicating what kind of plot the user wants to model
-#' @return A plot of the barcode composition over time.
 #' @import ggplot2
 #' @export plotDynamics
 
 plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
 
-  breaks = sort(c(unique(raw_df$variable)))
-  label = as.character(breaks)
+  #raw_df=dataframes[[1]]
+  #freq_treshold=min_freq_treshold
+  #cohort_name=cohort_names[[1]]
+  #plot_model="both"
+
+  x_breaks = sort(c(unique(raw_df$variable)))
+  #log10_y_breaks = sort(c(unique(raw_df$value)))
 
   treshold_top_max = treshold.top.max
   treshold_top_max$max=NULL
@@ -44,30 +48,28 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
   grouped_tf$ID = factor(grouped_tf$ID, levels = unique(grouped_tf$ID[order(grouped_tf$max)]))
   tf$ID = factor(tf$ID, levels = unique(tf$ID[order(tf$max)]))
 
-  # plot area
   # here we plot a first geom_area with all the barcodes using the long color list
-  # then we add a new fill scale, and plot a second geom area on top of the first
+  # then we add a new fill scale, and plot a second geom_area on top of the first
   # using only the subsetted, high-freq barcodes
 
   if (plot_model == "log"){
 
     g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
       ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
-      scale_x_continuous(breaks = breaks,labels = label) + theme_Publication() +
-      scale_fill_manual(values = mycolors,name="Cluster ID", guide=FALSE) +
-      labs(x="", y="Barcode density") + coord_cartesian(expand = FALSE) +
-      theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
+      scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
+      labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
 
     ggsave(g,filename = paste(output_directory, cohort_name,"_area.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
 
   } else if(plot_model == "linear"){
 
+
     all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
       geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
-      theme_Publication() + scale_y_log10(limits=c(1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="" ,y="Barcode frequency") +
-      scale_x_continuous(breaks = breaks,labels = labels) +
-      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE) +
-      theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+      theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
+      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
+      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
 
     ggsave(all.line,filename = paste(output_directory, cohort_name,"_line.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
 
@@ -75,19 +77,17 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
 
     g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
       ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
-      scale_x_continuous(breaks = breaks,labels = label) + theme_Publication() +
-      scale_fill_manual(values = mycolors,name="Cluster ID", guide=FALSE) +
-      labs(x="", y="Barcode density") + coord_cartesian(expand = FALSE) +
-      theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
+      scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
+      labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
 
     ggsave(g,filename = paste(output_directory, cohort_name,"_area.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
 
     all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
       geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
-      theme_Publication() + scale_y_log10(limits=c(1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="" ,y="Barcode frequency") +
-      scale_x_continuous(breaks = breaks,labels = labels) +
-      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE) +
-      theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+      theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
+      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
+      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
 
     ggsave(all.line,filename = paste(output_directory, cohort_name,"_line.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
 

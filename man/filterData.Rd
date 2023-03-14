@@ -4,14 +4,17 @@
 \alias{filterData}
 \title{Filtering the input files}
 \usage{
-filterData(input_df, time_threshold, name)
+filterData(input_df, freq_treshold, time_threshold, name)
 }
 \arguments{
 \item{input_df}{input file processed by read_csv()}
 
-\item{time_threshold}{time point threshold (keep barcodes with at least x non-zero time points)}
+\item{freq_treshold}{a double representing a minimum mean frequency below which
+the data is not retained.}
 
-\item{name}{sample's name}
+\item{time_threshold}{an integer indicating the time-point threshold (keep barcodes with at least x non-zero time points)}
+
+\item{name}{a character string indicating the sample's name}
 }
 \value{
 a matrix containing the ID,
@@ -20,6 +23,6 @@ frequency at each time point, average frequency and duration of each remaining b
 \description{
 This function is used to clean the input data given by the user in order to perform
 the clustering. We set a minimum mean frequency and a minimum time-point threshold below which
-the data is not retained.The function writes a csv file containing the ID,
+the data is not retained. The function writes a csv file containing the ID,
 frequency at each time point, average frequency and duration of each remaining barcode.
 }

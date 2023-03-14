@@ -4,10 +4,10 @@
 \alias{reshapeDF}
 \title{A reshape function}
 \usage{
-reshapeDF(raw_df)
+reshapeDF(sample)
 }
 \arguments{
-\item{raw_df}{a dataframe produced by readr::read_csv}
+\item{sample}{a dataframe produced by readr::read_csv}
 }
 \value{
 A reshaped dataframe for efficient plotting.

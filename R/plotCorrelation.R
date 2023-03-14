@@ -1,20 +1,18 @@
-#' A plot function
+#' A correlation function
 #'
 #' This function allows you to create a scatter plot of each sample's barcode
-#'  frequencies at all time points vs the barcode frequencies at time 0. In other
-#'  words, the plot shows the correlation between initial frequencies and frequencies at time t.
+#' frequencies at all time points vs the barcode frequencies at time 0. In other
+#' words, the plot shows the correlation between initial frequencies and frequencies at time t.
 #'
-#' @param input_data_sample input file given by user
-#' @param initial_library barcode library
-#' @param sample_name the sample's name
+#' @param input_data_sample a dataframe of the input file given by user
+#' @param initial_library a dataframe representing the initial barcode library
+#' @param sample_name a character string indicating the sample's name
 #' @return A dataframe linking the sample to the library
 #' @import ggplot2
 #' @import egg
 #' @import ggpubr
 #' @import magrittr
 #' @export plotCorrelation
-
-## TODO: Try to import less libraries
 
 plotCorrelation <- function(input_data_sample, initial_library, sample_name) {
 

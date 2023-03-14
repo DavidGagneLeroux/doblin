@@ -3,26 +3,31 @@
 \name{plotHCQuantification}
 \alias{plotHCQuantification}
 \alias{melt_dist}
+\alias{applyLOESS}
 \title{Plot hierarchical clustering quantification}
 \usage{
-plotHCQuantification(filtered_data, sample_name, clusters)
+plotHCQuantification(filtered_data, clusters, sample_name, n_members)
 
 melt_dist(dist, order = NULL, dist_name = "dist")
+
+applyLOESS(series_reshaped)
 }
 \arguments{
 \item{filtered_data}{a dataframe filtered by filterData()}
 
-\item{sample_name}{a character string indicating the sample's name}
-
 \item{clusters}{a dataframe containing the clusters from a hierarchical clustering
 for one or multiple thresholds}
+
+\item{sample_name}{a character string indicating the sample's name}
+
+\item{n_members}{an integer indicating the minimum number of members per cluster}
 }
 \description{
 This file contains multiple functions. The main function is plotHCQuantification()
-and it uses melt_dist(). plotHCQuantification() is called right after get_clonal_lineage_clusters()
+and it uses melt_dist(), applyLOESS() and adjust_span(). plotHCQuantification() is called right after perform_hierarchical_clustering()
 and uses the resulting dataframe. First, we compute the moving average of barcode
 frequencies for each cluster USING LOESS. The moving average is computed using only
-the persistent barcodes and each cluster must contain at least 8 members. Then,
+the persistent barcodes and each cluster must contain at least N members. Then,
 we calculate the smallest distance between clones (for all thresholds). We plot
 a graph representing the smallest distance between two clusters and the number of clusters
 according to the threshold.

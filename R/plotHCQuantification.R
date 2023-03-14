@@ -1,31 +1,30 @@
 #' Plot hierarchical clustering quantification
 #'
 #' This file contains multiple functions. The main function is plotHCQuantification()
-#' and it uses melt_dist(). plotHCQuantification() is called right after get_clonal_lineage_clusters()
+#' and it uses melt_dist(), applyLOESS() and adjust_span(). plotHCQuantification() is called right after perform_hierarchical_clustering()
 #' and uses the resulting dataframe. First, we compute the moving average of barcode
 #' frequencies for each cluster USING LOESS. The moving average is computed using only
-#' the persistent barcodes and each cluster must contain at least 8 members. Then,
+#' the persistent barcodes and each cluster must contain at least N members. Then,
 #' we calculate the smallest distance between clones (for all thresholds). We plot
 #' a graph representing the smallest distance between two clusters and the number of clusters
 #' according to the threshold.
 #'
 #' @name plotHCQuantification
 #' @param filtered_data a dataframe filtered by filterData()
-#' @param sample_name a character string indicating the sample's name
 #' @param clusters a dataframe containing the clusters from a hierarchical clustering
 #'  for one or multiple thresholds
+#' @param sample_name a character string indicating the sample's name
+#' @param n_members an integer indicating the minimum number of members per cluster
 #' @import dplyr
 #' @import ggplot2
 #' @export plotHCQuantification
 
-#library("dplyr")
-#library("ggplot2")
-
-plotHCQuantification <- function(filtered_data, sample_name, clusters){
+plotHCQuantification <- function(filtered_data, clusters, sample_name, n_members){
 
   #clusters = clusters_df
   #filtered_data = filtered_dataframes[[1]]
   #sample_name = cohort_names[[1]]
+  #n_members = min_members
 
   ## rank is just a way to numerate each barcode
   nRank = nrow(clusters)
@@ -38,49 +37,41 @@ plotHCQuantification <- function(filtered_data, sample_name, clusters){
   series.filtered$rank=seq(1:nRank)
   series.filtered_long=reshape2::melt( series.filtered,id.vars = c('ID','rank','mean'))
 
-  ## series.reshaped is a dataframe where "variable" represents the time-point (1-18) and value
+  ## series.reshaped is a dataframe where "variable" represents the time-point (ex:1-18) and value
   ## represents the barcode frequencies
   series.reshaped = merge(series.filtered_long,clusters_long,by.x = "rank",by.y = "rank", all = TRUE)
   series.reshaped$variable = as.numeric(as.character(series.reshaped$variable))
 
-  ## Group by cluster & cutoff and keep only the clusters with at least 8 members
-  series.reshaped=series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) >= 8)
+  ## Group by cluster and keep only the clusters with at least n_members members
+  series.reshaped.1=series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) >= n_members)
 
-  ## Keep only the persistent barcodes
-  series_order=subset(series.reshaped,series.reshaped$variable==max(unique(series.reshaped$variable)))
+  ## To avoid ignoring the dominant barcodes, which might be in smaller clusters, we add a second criteria:
+  if(nrow(series.reshaped.1) != nrow(series.reshaped)){
 
-  series_order=series_order %>%
-    dplyr::group_by(cluster,cutoff) %>%
-    dplyr::summarise(average = mean(value)) %>% dplyr::ungroup() %>%
-    dplyr::group_by(cutoff) %>%
-    dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
+    cat("You might be ignoring dominant barcodes, please enter a minimum mean frequency that must be reached by at least one of the members for the cluster to be considered: ")
+    #minimum_freq <-1e-03
+    minimum_freq <- as.numeric(readLines("stdin", n=1))
 
-  series.reshaped=merge(series.reshaped,series_order,by=c("cluster","cutoff"))
-  series.reshaped$cluster=NULL
-  names(series.reshaped)[8]="cluster"
+    series.reshaped.2 = series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) < n_members) %>% mutate(mean_freq = mean(value)) %>% dplyr::filter(mean_freq >= minimum_freq)
+    series.reshaped.2$mean_freq = NULL
 
-  max.range = max(series.reshaped$variable)-min(series.reshaped$variable)
-  loess.range = (max.range*10)+1
+    series.reshaped = rbind(series.reshaped.1, series.reshaped.2)
 
-  ## Get moving average of barcode frequencies for each cluster USING LOESS
-  xx <- seq(from=min(series.reshaped$variable), to=max(series.reshaped$variable),length.out = loess.range)
+  }
 
-  df=series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>%
-    dplyr::summarise(model=predict(loess(log10(value+0.0000001)~variable,span=0.2),xx,se = FALSE))  %>%
-    dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
+  clusters_dataframe = applyLOESS(series.reshaped)
+  rm(series.reshaped.1, series.reshaped.2, series.reshaped)
 
-  rm(series.reshaped)
-
-  df$cluster=as.factor(as.integer(df$cluster))
-  df$cutoff=as.numeric(as.character(df$cutoff))
-  cutoff=unique(df$cutoff)
+  clusters_dataframe$cluster=as.factor(as.integer(clusters_dataframe$cluster))
+  clusters_dataframe$cutoff=as.numeric(as.character(clusters_dataframe$cutoff))
+  cutoff=unique(clusters_dataframe$cutoff)
 
   ## Calculate the smallest distance between clones depending on threshold.
   ## TSDistances: computes distances between pairs of time series. (TSdist::)
   if (!proxy::pr_DB$entry_exists("TSDistances")){
     proxy::pr_DB$set_entry(FUN = TSdist::TSDistances, names=c("TSDistances"), loop = TRUE, type = "metric", distance = TRUE)
   }
-  tf = df %>% split(.$cutoff)  %>%
+  tf = clusters_dataframe %>% split(.$cutoff)  %>%
     purrr::map(~{
       tidyr::spread(.x, key = cluster, value = model)
     }) %>%  purrr::map(~{
@@ -95,6 +86,8 @@ plotHCQuantification <- function(filtered_data, sample_name, clusters){
     dplyr::group_by(cutoff) %>%
     dplyr::mutate(cluster=max(cluster),id=paste(iso1,iso2 ,sep="_")) %>%
     dplyr::summarise(dist_small=min(dist),cluster=max(cluster))
+
+  readr::write_csv(smallest_distance,file = paste(output_directory, sample_name, "_threshold_selection.csv",sep=""),col_names = TRUE)
 
   rm(distance_pairwise)
 
@@ -127,4 +120,40 @@ melt_dist <- function(dist, order = NULL, dist_name = 'dist') {
     tidyr::gather_(key = "iso2", value = lazyeval::interp("dist_name", dist_name = as.name(dist_name)), order, na.rm = T)
   return(dist_df)
 }
+
+#################
+#' @export
+#' @rdname plotHCQuantification
+
+applyLOESS <- function(series_reshaped){
+
+  #series_reshaped = series.reshaped.2
+  #i=5
+  ## Keep only the persistent barcodes
+  series_order=subset(series_reshaped,series_reshaped$variable==max(unique(series_reshaped$variable)))
+
+  series_order=series_order %>%
+    dplyr::group_by(cluster,cutoff) %>%
+    dplyr::summarise(average = mean(value)) %>% dplyr::ungroup() %>%
+    dplyr::group_by(cutoff) %>%
+    dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
+
+  series_order$cluster2=as.integer(as.character(series_order$cluster2))
+  series_reshaped=merge(series_reshaped,series_order,by=c("cluster","cutoff"))
+  series_reshaped$cluster=NULL
+  names(series_reshaped)[8]="cluster"
+
+  max.range = max(series_reshaped$variable)-min(series_reshaped$variable)
+  loess.range = (max.range*10)+1
+
+  ## Get moving average of barcode frequencies for each cluster USING LOESS
+  xx <- seq(from=min(series_reshaped$variable), to=max(series_reshaped$variable),length.out = loess.range)
+
+  cluster.df=series_reshaped %>%  dplyr::group_by(cluster,cutoff) %>%
+    dplyr::summarise(model=predict(adjust_span(variable, value, span = 0.2),xx,se = FALSE))  %>%
+    dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
+
+  return(cluster.df)
+}
+
 

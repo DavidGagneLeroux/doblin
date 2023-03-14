@@ -2,8 +2,7 @@
 % Please edit documentation in R/plotSpearmanCorr.R
 \name{plotSpearmanCorr}
 \alias{plotSpearmanCorr}
-\title{Here we plot the running frequency correlations with initial library
-for all samples.}
+\title{Here we plot each sample's Spearman correlation over time}
 \usage{
 plotSpearmanCorr(sample_corr)
 }
@@ -14,6 +13,5 @@ plotSpearmanCorr(sample_corr)
 A plot of the Spearman rank correlation of all samples over time
 }
 \description{
-Here we plot the running frequency correlations with initial library
-for all samples.
+Here we plot each sample's Spearman correlation over time
 }

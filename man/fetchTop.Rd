@@ -9,7 +9,7 @@ fetchTop(reshaped_df, n_intersect)
 \arguments{
 \item{reshaped_df}{a dataframe produced by reshapeDF()}
 
-\item{n_intersect}{number of barcodes to fetch}
+\item{n_intersect}{integer representing the number of barcodes to fetch}
 }
 \value{
 A list containing 2 dataframes: top N barcodes according to their final

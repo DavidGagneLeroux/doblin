@@ -4,19 +4,18 @@
 \alias{plotDynamics}
 \title{A plot function}
 \usage{
-plotDynamics(raw_df, freq_treshold, cohort_name)
+plotDynamics(raw_df, freq_treshold, cohort_name, plot_model)
 }
 \arguments{
 \item{raw_df}{a dataframe produced by reshapeDF()}
 
-\item{freq_treshold}{a limit frequency above which barcodes have assigned colors}
+\item{freq_treshold}{a double representing a limit frequency above which barcodes have assigned colors}
 
-\item{cohort_name}{the sample's name}
-}
-\value{
-A plot of the barcode composition over time.
+\item{cohort_name}{a character string indicating the sample's name}
+
+\item{plot_model}{a character string indicating what kind of plot the user wants to model}
 }
 \description{
-This function allows you to plot barcode dynamics (Muller-style area plot and
-log-line plot).
+This function allows you to plot barcode dynamics (linear plot and
+log-transformed plot).
 }

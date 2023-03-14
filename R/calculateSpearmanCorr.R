@@ -1,9 +1,11 @@
-#' Here we calculate the running frequency correlations with initial library
-#'  for all samples.
+#' Spearman Correlation function
+#'
+#' Here we calculate the Spearman correlations between the initial library
+#'  and all samples.
 #'
 #' @param index_dataframe dataframe returned by plotCorrelation()
-#' @param sample_name the sample's name
-#' @return A dataframe containing the running frequency correlations between a
+#' @param sample_name a character string indicating the sample's name
+#' @return A dataframe containing the Spearman correlations between a
 #' sample and the initial library for all timepoints
 #' @export calculateSpearmanCorr
 

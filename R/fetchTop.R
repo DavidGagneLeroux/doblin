@@ -4,7 +4,7 @@
 #' The top N barcodes are recovered according to their maximum and final frequencies.
 #'
 #' @param reshaped_df a dataframe produced by reshapeDF()
-#' @param n_intersect number of barcodes to fetch
+#' @param n_intersect integer representing the number of barcodes to fetch
 #' @return A list containing 2 dataframes: top N barcodes according to their final
 #'  frequencies and top N barcodes according to their maximum frequencies.
 #' @export fetchTop
