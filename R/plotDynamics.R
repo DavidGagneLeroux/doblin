@@ -27,7 +27,10 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
 
   # for all barcodes without a universal color (barcodes with max frequencies < treshold),
   # assign a gray hex value
-  df[is.na(df$hex),]$hex="#cccccc"
+  if (nrow(df[is.na(df$hex),]) > 0){
+    df[is.na(df$hex),]$hex="#cccccc"
+  }
+
 
   # convert ID to factor for grouping
   df$ID = as.factor(df$ID)
