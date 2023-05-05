@@ -4,28 +4,34 @@
 #'  log-transformed plot).
 #'
 #' @param raw_df a dataframe produced by reshapeDF()
-#' @param freq_treshold a double representing a limit frequency above which barcodes have assigned colors
+#' @param freq_threshold a double representing a limit frequency above which barcodes have assigned colors
 #' @param cohort_name a character string indicating the sample's name
 #' @param plot_model a character string indicating what kind of plot the user wants to model
 #' @import ggplot2
 #' @export plotDynamics
 
-plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
+plotDynamics <- function(raw_df, freq_threshold, cohort_name, plot_model) {
 
   #raw_df=dataframes[[1]]
-  #freq_treshold=min_freq_treshold
+  #freq_threshold=min_freq_threshold
   #cohort_name=cohort_names[[1]]
-  #plot_model="both"
+  #plot_model="linear"
 
   x_breaks = sort(c(unique(raw_df$variable)))
   #log10_y_breaks = sort(c(unique(raw_df$value)))
 
-  treshold_top_max = treshold.top.max
-  treshold_top_max$max=NULL
+  threshold_top_max = threshold.top.max
+  threshold_top_max$max=NULL
 
-  df = merge(raw_df, treshold_top_max, by = "ID",all.x = TRUE)
+  # FOR CARTOON
+  #threshold_top_max$hex <- sample(colorRampPalette(c("#0D0887FF","#6A00A8FF","#26828EFF","#6DCD59FF", "#FCA636FF","#FDE725FF"))(n =47))
 
-  # for all barcodes without a universal color (barcodes with max frequencies < treshold),
+
+  df = merge(raw_df, threshold_top_max, by = "ID",all.x = TRUE)
+  # FOR CARTOON
+  #df = merge(threshold_top_max, raw_df, by = "ID",all.x = TRUE)
+
+  # for all barcodes without a universal color (barcodes with max frequencies < threshold),
   # assign a gray hex value
   if (nrow(df[is.na(df$hex),]) > 0){
     df[is.na(df$hex),]$hex="#cccccc"
@@ -40,7 +46,7 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
 
   # subset dataframe with barcodes above a certain max frequency
   grouped_by = magrittr::`%>%`(tf, dplyr::group_by(hex))
-  filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>freq_treshold))
+  filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>freq_threshold))
   grouped_tf = magrittr::`%>%`(filtered, dplyr::ungroup())
 
   # set color scale using universal hex colors
@@ -57,26 +63,54 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
 
   if (plot_model == "log"){
 
+
+    # g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
+    #   scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
+    #   scale_fill_manual(values =mycolors,name="Cluster ID", guide="none") +
+    #   labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE) +
+    #   theme(axis.text.x = element_blank(),
+    #         axis.ticks.x = element_blank(),
+    #         axis.text.y = element_blank(),
+    #         axis.ticks.y = element_blank())
+    grDevices::cairo_ps(paste(output_directory, cohort_name,"_area.ps", sep=""),width = 8.25,height = 6)
+
     g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
       ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
       scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
       labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
 
-    ggsave(g,filename = paste(output_directory, cohort_name,"_area.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
+    graphics::plot(g)
+    grDevices::dev.off()
 
   } else if(plot_model == "linear"){
 
 
+
+    # all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
+    #   theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors)+ labs(x ="Time" ,y="Barcode frequency") +
+    #   scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
+    #   guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE) +
+    #   theme(axis.text.x = element_blank(),
+    #         axis.ticks.x = element_blank(),
+    #         axis.text.y = element_blank(),
+    #         axis.ticks.y = element_blank())
+
+
+    grDevices::cairo_ps(paste(output_directory, cohort_name,"_line.ps", sep=""),width = 8.25,height = 6)
+
     all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
-      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
+      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,linewidth=1) +
       theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
       guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
 
-    ggsave(all.line,filename = paste(output_directory, cohort_name,"_line.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
+    graphics::plot(all.line)
+    grDevices::dev.off()
 
   } else if(plot_model == "both"){
+
+    grDevices::cairo_ps(paste(output_directory, cohort_name,"_area.ps", sep=""),width = 8.25,height = 6)
 
     g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
       ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
@@ -84,15 +118,19 @@ plotDynamics <- function(raw_df, freq_treshold, cohort_name, plot_model) {
       scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
       labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
 
-    ggsave(g,filename = paste(output_directory, cohort_name,"_area.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
+    graphics::plot(g)
+    grDevices::dev.off()
+
+    grDevices::cairo_ps(paste(output_directory, cohort_name,"_line.ps", sep=""),width = 8.25,height = 6)
 
     all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
-      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
+      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,linewidth=1) +
       theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
       guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
 
-    ggsave(all.line,filename = paste(output_directory, cohort_name,"_line.jpeg", sep=""), type = "cairo",width = 8.25,height = 6)
+    graphics::plot(all.line)
+    grDevices::dev.off()
 
   }
 

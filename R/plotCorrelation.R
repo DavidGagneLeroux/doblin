@@ -37,6 +37,6 @@ plotCorrelation <- function(input_data_sample, initial_library, sample_name) {
       scale_y_log10(limits=c(min(Sample.index$freq),1)) + geom_abline(slope = 1, intercept = 0, linetype="dashed") +
       xlab("Initial frequency") + ylab(paste("Frequency at time",times[i]))
   }
-  ggarrange(plotlist = freq_plots) %>% ggexport(filename = paste(output_directory, sample_name,"_grid.png", sep=""),width = 1800,height = 1200,ncol = 4,nrow = 4)
+  ggarrange(plotlist = freq_plots) %>% ggexport(filename = paste(output_directory, sample_name,"_grid.eps", sep=""),width = 1800,height = 1200,ncol = 4,nrow = 4)
   return(Sample.index)
 }

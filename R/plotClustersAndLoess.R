@@ -25,7 +25,7 @@ cluster.colors=c("#3cb44b","#4363d8","#e6194B","#e8ca00","#911eb4","#f58231","#2
 plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_name, effective.breaks, n_members){
 
   #series.filtered = filtered_dataframes[[1]]
-  #sample_name = "X1r1"
+  #sample_name = "m1"
   #selected.clusters=selected_clusters
   #effective.breaks = breaks[[1]]
   #n_members = 8
@@ -69,7 +69,6 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
   ## Write series.reshape
   readr::write_csv(series.reshaped,file = paste(output_directory, sample_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
 
-  rm(series.reshaped)
 
   ## loesss
   #TODO: considérer plusieurs cluster.df
@@ -78,9 +77,9 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
   clusters.loess <- tidyr::spread(clusters_dataframe, cluster, value)
 
   # plot loess
-  loess.plot = ggplot(clusters_dataframe) + geom_line(aes(time/10,value,group=cluster,color=cluster),size=1) + scale_x_continuous(limits = effective.limits) +
-    theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("fit") + xlab("Time") + ylim(min(clusters_dataframe$value),1)
-  ggsave(loess.plot,filename = paste(output_directory, sample_name, "_loess_clusters_log10.jpeg", sep=""),width = 8.25,height = 6,device = "jpeg")
+  loess.plot = ggplot(clusters_dataframe) + geom_line(aes(x=time/10,y=10^(value),group=cluster,color=cluster),size=1) + scale_x_continuous(limits = effective.limits) +
+    theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("Clone frequency") + xlab("Time") + scale_y_log10(limits=c(min(10^clusters_dataframe$value),1e0))
+  ggsave(loess.plot,filename = paste(output_directory, sample_name, "_loess_clusters_log10.eps", sep=""),width = 8.25,height = 6)
 
   # write loess file
   readr::write_csv(clusters.loess,file = paste(output_directory, sample_name, "_clustered_loess_log10.csv",sep=""),col_names = TRUE)
@@ -97,17 +96,21 @@ plotClusterLog10 <- function(df,cluster,sample,color,tf, effective.breaks){
   effective.labels = as.character(effective.breaks)
   effective.limits = c(min(effective.breaks), max(effective.breaks))
 
-  p = ggplot(df,aes(x=variable,y=log10(value+0.0000001))) +
-    geom_line(aes(group=ID),color=color,alpha=0.4) + theme_Publication(base_size = 18) +
-    ylim(min(log10(df$value + 0.0000001)),0) +
-    labs(x = "Time",y="log10(Barcode frequency)") + guides(color = FALSE) +
+  # grDevices::cairo_ps(paste(output_directory, sample, "_cluster", cluster, "_log10.ps", sep=""),width = 5.5,height = 4)
+
+  p = ggplot(df,aes(x=variable,y=value)) +
+    geom_line(aes(group=ID),color=color) + theme_Publication(base_size = 18) +
+    scale_y_log10(limits=c(min(df$value)+1e-7,1e0)) +
+    labs(x = "Time",y="lineage frequency") + guides(color = FALSE) +
     scale_x_continuous(limits = effective.limits) +
-    coord_cartesian(expand = FALSE) + geom_line(data=tf,aes(time,value),color="black") +
+    coord_cartesian(expand = FALSE) + geom_line(data=tf,aes(time,10^value),color="black") +
     annotate("text", y=-0.75, x = 3,label=paste("n",length(unique(df$ID)),sep=" = "),hjust=0,size=5) +
     ggtitle(paste("Cluster",cluster,sep=" "))
 
-  # must plot to extract fit
-  ggsave(filename = paste(output_directory, sample, "_cluster", cluster, "_log10.jpeg", sep=""),width = 5.5,height = 4,device = "jpeg")
+  # graphics::plot(p)
+  # grDevices::dev.off()
+
+  ggsave(p,filename =  paste(output_directory, sample, "_cluster", cluster, "_log10.eps", sep=""),width = 5.5,height = 4)
 
   return(p)
 }
@@ -118,7 +121,7 @@ plotClusterLog10 <- function(df,cluster,sample,color,tf, effective.breaks){
 
 apply_LOESS <- function(series_reshaped, effective.breaks, sample_name){
 
-  #series_reshaped <- series.reshaped.2
+  #series_reshaped <- series.reshaped
 
   ## Keep only the persistent barcodes
   ## series_order only contains the data regarding the last generation/time-point
@@ -154,8 +157,9 @@ apply_LOESS <- function(series_reshaped, effective.breaks, sample_name){
 
   }
 
-  #top10.log =cowplot::plot_grid(plotlist=plotList, align = "hv",axis="tblr", nrow=ceiling(length(unique(series_reshaped$cluster))))
-  #ggsave(top10.log,filename = paste(output_directory, sample_name, "_clusters_log10_", as.character(clusters.ranked[i]) ,".jpeg", sep=""),width = 18,height=7.5*length(unique(series_reshaped$cluster))/5, device="jpeg")
+
+  #top10.log =cowplot::plot_grid(plotlist=plotList, align = "hv",axis="tblr")
+  #ggsave(top10.log,filename = paste(output_directory, sample_name, "_clusters_log10_", as.character(clusters.ranked[i]) ,".eps", sep=""))
 
   return(cluster.df)
 }

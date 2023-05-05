@@ -97,9 +97,9 @@ plotHCQuantification <- function(filtered_data, clusters, sample_name, n_members
 
   choose_threshold = ggplot(smallest_distance,aes(as.numeric(as.character(cutoff)),dist_small))+ geom_line(color="black", size=2.5) +
     theme_Publication() + geom_line(aes(as.numeric(as.character(cutoff)), as.integer(as.character(cluster))*scale), size = 2, color = "darkblue") +
-    scale_y_continuous(sec.axis = sec_axis(~./scale,name="Cluster number")) + scale_x_reverse() +xlab("Threshold")
+    scale_y_continuous(sec.axis = sec_axis(~./scale,name="Cluster number")) + scale_x_reverse() +xlab("Threshold") + ylab("Distance")
 
-  ggsave(choose_threshold,filename =  paste(output_directory,sample_name, "_threshold_selection", ".png",sep=""),width = 9,height = 8, device =cairo_ps())
+  ggsave(choose_threshold,filename =  paste(output_directory,sample_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
 }
 
 #################

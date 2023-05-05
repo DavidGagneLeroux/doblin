@@ -4,12 +4,12 @@
 \alias{plotDynamics}
 \title{A plot function}
 \usage{
-plotDynamics(raw_df, freq_treshold, cohort_name, plot_model)
+plotDynamics(raw_df, freq_threshold, cohort_name, plot_model)
 }
 \arguments{
 \item{raw_df}{a dataframe produced by reshapeDF()}
 
-\item{freq_treshold}{a double representing a limit frequency above which barcodes have assigned colors}
+\item{freq_threshold}{a double representing a limit frequency above which barcodes have assigned colors}
 
 \item{cohort_name}{a character string indicating the sample's name}
 

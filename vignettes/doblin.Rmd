@@ -1,5 +1,5 @@
 ---
-title: "Introduction to doblin"
+title: "Introduction to doblin: a step-by-step threw the pipeline"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -69,6 +69,16 @@ knitr::opts_chunk$set(
 
 The *doblin* package is intended to be a comprehensive toolbox to understand how clonal populations of cells evolve over time. It was developed for the analysis of dominant and persistent barcode lineage data resulting from *Next Generation Sequencing* (NGS). In combination with functionalities needed for data analysis, the package offers a variety of visualizations.
 
+In order to carry out an analysis, the barcodes must first be extracted from the sequencing data and grouped according to their respective sequences for each time point. This allows us to plot the frequency trajectory of each barcode. 
+
+Since the objective is to highlight the dominant and persistent barcodes, we filter the data in order to keep only the barcodes associated with lineages having reached a certain minimum frequency and having survived a pre-defined period.
+
+At this point, we assume that barcode lineages with similar population dynamics originate from the same ancestor, in which case we consider them as clones and gather them under a same cluster. To quantify the similarity between pairs of barcode lineages, we use a distance metric based either on the Pearson correlation or the Dynamic Time Warping (DTW). The resulting distance matrix is used to perform a hierarchical clustering of the barcode lineages.  An optimal clustering is a clustering that avoids grouping clonal lineages with distinct dynamics, but limits its groupings so that they are differentiable from each other. 
+
+The final dynamics, representing the major clonal lineages, are obtained by computing a LOESS curve for each of the resulting clusters.
+
+N.B.: All the presented code in the following pages come from the main.R script in the demo/ directory of the doblin package.
+
 ## 1.1 Barcode extraction from the FASTQ/FASTA file
 
 This subsection is specifically for users with sequencing data who haven't yet perform barcode extraction. Prior to analysis, the user must identify and extract the barcode sequences from his raw sequencing data. *Bartender* is a useful tool to process barcode data (\underline{https://github.com/LaoZZZZZ/bartender-1.1}).
@@ -87,6 +97,7 @@ Once the barcodes have been extracted, it is primordial to format the data as fo
 \end{description}
 \end{itemize}
 ```
+\pagebreak
 ## 1.2 Dependencies
 
 If the necessary packages aren't already installed on your system, please install them before running the following pipeline.
@@ -109,11 +120,11 @@ After loading the package with the `library("doblin")` command, the entire funct
 
 ## 1.3 Parsing arguments from the command line
 
-NOTE: Before running the command line, make sure to set your working directory to the `doblin` folder!
+N.B.: Before running the command line, make sure to set your working directory to the `doblin` folder.
 
 In order to use the following pipeline, a command line of the following form must be written:
 
-`Rscript ./demo/main.R -x 1000 -t 0.0005 -o {output_directory} -s {sample_name} -i {sample_file} -c 14`
+`Rscript ./demo/main.R -x 1000 -t 0.0005 -o {output_directory} -s {sample_name} -i {input_file} -c {time_threshold}`
 
 Example using 2 samples (M1 and M2):
 
@@ -152,13 +163,15 @@ if (length(arguments)>= 7) {
   output_directory = arguments$outputPath
   cohort_names = as.list(strsplit(arguments$sampleNames, ",")[[1]])
   input_files = as.list(strsplit(arguments$inputFiles, ",")[[1]])
-  time_treshold = as.numeric(arguments$timeCut)
+  time_threshold = as.numeric(arguments$timeCut)
 
 } else {
 
   stop("Missing arguments. Arguments must be supplied!", call.=FALSE)
 }
 ```
+
+If the user wants to go threw main.R manually, the parsing steps can be skipped. However, the user will have to define all 6 variables himself.
 
 \pagebreak
 
@@ -197,7 +210,9 @@ for(element in x){
 
 ## 2.2 Visualizing barcode dynamics
 
-To compare barcode trajectories within and between samples, we aimed to use consistent color coding for barcode lineages. First, we assigned a unique color to all lineages that reached a relative frequency - specified by the `-t` argument in the command line (default: 0.0005). For example, a barcode lineage that was assigned the color "magenta [#c20078]" will always have this color in all the figures. Conversely, no other barcode was assigned the same color. To create the Muller-type plots, the barcode frequencies at every time point were represented in linear scale (Figure 2). For each sample, the barcodes are sorted by the maximum frequency they attained over the time-series. This produced a stacked area plot where dominant barcodes are shown starting from the bottom of the panel and progressively lower-frequency barcodes are shown at the top. The same data is used to plot the frequency trajectories in log10-transformation (Figure 1). Barcodes that reached the minimum frequency (`-t`) throughout its time-series are shown in color, whereas the remaining barcodes are shown in grey for clarity.
+To compare barcode trajectories within and between samples, we aimed to use consistent color coding for barcode lineages. First, we assigned a unique color to all lineages that reached a relative frequency - specified by the `-t` argument in the command line (default: 0.0005). For example, a barcode lineage that was assigned the color "magenta [#c20078]" will always have this color in all the figures. Conversely, no other barcode was assigned the same color. 
+
+The barcode frequencies at every time point were represented on both linear and logarithmic scales (Figures 1-2). For each sample, the barcodes are sorted by the maximum frequency they attained over the time-series. Thus, in the resulting logarithmic scale model, the dominant barcodes are represented starting from the bottom of the panel, while lower-frequency barcodes are progressively shown at the top. Barcodes that reached the minimum frequency (`-t`) throughout its time-series are shown in color, whereas the remaining barcodes are shown in grey for clarity.
 
 ```{r eval=FALSE, collapse=TRUE}
 ## Step 3: Color assignment for plotting
@@ -370,7 +385,7 @@ if(exist_library == "y"){
 
 To identify the clonal lineages, we cluster the barcode lineages for each sample based on the similarity of their time series behavior. To maximize the accuracy of this clustering, we exclude barcodes with insufficient time points (the `-c` argument in the command line). This ensures that all barcode lineages included in the clustering have a sufficient number of points for pairwise comparison. This procedure means that the lineage clustering focuses on dominant and persistent clones; barcodes that immediately went to extinction were excluded.
 
-We compute the distance matrix according to the clustering method given by the user - Pearson or dtw - and perform a hierarchical clustering (Figure 8). The user can choose a linkage method among those presented in the r documentation (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust}). As an example, the *average* linkage method implements the algorithm *Unweighted Pair Group Method with Arithmetic mean* (UPGMA). This method computes the distance between two clusters as the arithmetic mean of the distances between all lineages in both clusters. The user also needs to specify a method for computing covariances in the presence of missing values. Please refer to the r documentation to view the possible options (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/cor}). Then, for each cluster, we fit a consensus trajectory using the local regression (loess). Loess is a form of moving average where a line is fit locally using neighboring points weighted by their distance from the current point.
+We compute the distance matrix according to the clustering method given by the user - Pearson or dtw - and perform a hierarchical clustering (Figure 8). The user can choose a linkage method among those presented in the r documentation (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust}). As an example, the *average* linkage method implements the algorithm *Unweighted Pair Group Method with Arithmetic mean* (UPGMA). This method computes the distance between two clusters as the arithmetic mean of the distances between all lineages in both clusters. If the user chooses the Pearson's method, he will also need to specify a method for computing covariances in the presence of missing values. Please refer to the r documentation to view the possible options (\underline{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/cor}). Then, for each cluster, we fit a consensus trajectory using the local regression (loess). Loess is a form of moving average where a line is fit locally using neighboring points weighted by their distance from the current point.
 
 To determine the optimal clustering threshold, we note three general trends:
 
@@ -404,21 +419,31 @@ linkage <- readLines("stdin", n=1)
 
 cat("Enter a clustering method (pearson or dtw) : ")
 clustering <- readLines("stdin", n=1)
-
-cat("Enter a method to compute the covariance (ex: pairwise.complete.obs) : ")
-covariance <- readLines("stdin", n=1)
-
+clustering <- match.arg(clustering, c("pearson","dtw"))
+if (clustering=="pearson") {
+  cat("Enter a method to compute the covariance (ex: pairwise.complete.obs) : ")
+  covariance <- readLines("stdin", n=1)
+  covariance <- match.arg(covariance, c("everything","all.obs","complete.obs",
+                                        "na.or.complete","pairwise.complete.obs"))
+}else{
+  covariance = NULL
+}
 ```
 
 In order to find that cross-over, we compute the relative clusters for all thresholds between 0.1 and the maximum height of the hierarchical clustering. This step allows the user to visualize the possible clusters and make an informed choice about which threshold to use.
 
 ```{r eval=FALSE, collapse=TRUE}
-print("Computing the relative clusters for ALL thresholds...")
-
+print("Computing the relative clusters for ALL thresholds between 0.1 and max
+      height of HC... ")
 for(i in 1:length(filtered_dataframes)) {
-  clusters_df = get_clonal_lineage_clusters(filtered_dataframes[[i]], cohort_names[[i]],
-                                            linkage, clustering, covariance)
-  plotHCQuantification(filtered_dataframes[[i]], cohort_names[[i]], clusters_df)
+  clusters_df = perform_hierarchical_clustering(filtered_dataframes[[i]],
+                                                cohort_names[[i]], linkage,
+                                                clustering, covariance)
+
+  cat(paste("Enter the minimum number of members per cluster for", cohort_names[[i]], ": "))
+  min_members <- as.numeric(readLines("stdin", n=1))
+
+  plotHCQuantification(filtered_dataframes[[i]], clusters_df, cohort_names[[i]], min_members)
 }
 
 breaks <- list()
@@ -441,17 +466,19 @@ for(i in 1:length(input_data)){
 At this point, the user should have all the tools to choose a relevant threshold. Once done, we re-perform a clustering with the chosen threshold and model the local composition of each cluster i.e. frequencies of their respective barcodes over time (Figure 10) as well as the general composition of each sample i.e. each cluster's loess over time (Figure 11).
 
 ```{r eval=FALSE, collapse=TRUE}
-cat("Enter the chosen threshold : ")
-selected_threshold <- as.numeric(readLines("stdin", n=1))
-
 for(i in 1:length(filtered_dataframes)) {
 
-  selected_clusters = get_clonal_lineage_clusters(filtered_dataframes[[i]],
-                                                  cohort_names[[i]],linkage, clustering,
-                                                  covariance, selected_threshold)
+  cat(paste("Enter the chosen threshold for", cohort_names[[i]], ": "))
+  selected_threshold <- as.numeric(readLines("stdin", n=1))
+
+  selected_clusters = perform_hierarchical_clustering(filtered_dataframes[[i]],
+                                                      cohort_names[[i]], linkage,
+                                                      clustering, covariance,
+                                                      selected_threshold)
   plot_clusters_and_loess(filtered_dataframes[[i]], selected_clusters, cohort_names[[i]],
-                          breaks[[i]])
+                          breaks[[i]], min_members)
 }
+
 
 ```
 

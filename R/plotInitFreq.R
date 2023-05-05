@@ -40,7 +40,7 @@ plotInitFreq <- function(initial_library) {
     scale_y_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) + theme_Publication() +
     xlab("Barcode frequency") + ylab("# of unique barcodes") + annotation_logticks()
 
-  ggsave(gavage.plot,filename = paste(output_directory,"library_frequency_spectrum.jpeg",sep=""),type = "cairo",width = 4,height = 4)
+  ggsave(gavage.plot,filename = paste(output_directory,"library_frequency_spectrum.eps",sep=""),width = 4,height = 4)
 
   return(initial_library)
 }

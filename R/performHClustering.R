@@ -35,7 +35,8 @@ perform_hierarchical_clustering <- function(filtered_data, sample_name, linkage_
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
 
-  my_palette <- grDevices::colorRampPalette(c("red", "white", "blue"))(n = nrow(filtered_dataf))
+  #my_palette <- grDevices::colorRampPalette(c("red", "white", "blue"))(n = nrow(filtered_dataf))
+  my_palette <- colorRampPalette(c("purple","#66a266","darkorange"))(n = nrow(filtered_dataf) + 100)
 
   ## Compute the distance matrix according to the chosen clustering method and perform
   ## a hierarchical clustering
@@ -62,13 +63,14 @@ perform_hierarchical_clustering <- function(filtered_data, sample_name, linkage_
 
   ## Plot dendrogram:
   as.dendrogram(clust) -> dend
-  png(paste(output_directory, sample_name,"_", clustering_method, ".png",sep=""),res = 300,width = 5.5,height = 5, units="in")
+
+  grDevices::postscript(paste(output_directory, sample_name,"_", clustering_method, ".eps",sep=""),width = 5.5,height = 5)
   par(mar = c(2,2,2,2))
 
   ## Plot heatmap:
   gplots::heatmap.2(distmat,Rowv = dend,Colv = dend,col=rev(my_palette),density.info = "none",trace = "none",
                     key.xlab="(1 - r)",cexRow = 0.5,cexCol = 0.5, labRow = FALSE, labCol = FALSE)
-  dev.off()
+  grDevices::dev.off()
 
   rm(distmat)
 
