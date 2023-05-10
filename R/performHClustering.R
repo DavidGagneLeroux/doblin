@@ -30,13 +30,13 @@ perform_hierarchical_clustering <- function(filtered_data, sample_name, linkage_
   #clustering_method = "pearson"
   clustering_method <- match.arg(clustering_method)
 
-  #threshold = 0.145
+  #threshold = 0.1
 
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
 
-  #my_palette <- grDevices::colorRampPalette(c("red", "white", "blue"))(n = nrow(filtered_dataf))
-  my_palette <- colorRampPalette(c("purple","#66a266","darkorange"))(n = nrow(filtered_dataf) + 100)
+  my_palette <- grDevices::colorRampPalette(c("red", "white", "blue"))(n = nrow(filtered_dataf))
+  #my_palette <- colorRampPalette(c("purple","#66a266","darkorange"))(n = nrow(filtered_dataf) + 100)
 
   ## Compute the distance matrix according to the chosen clustering method and perform
   ## a hierarchical clustering

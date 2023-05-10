@@ -81,49 +81,49 @@ input_data <- lapply(input_files, readr::read_csv)
 print("Reshaping input files into dataframes...")
 dataframes <- lapply(input_data, reshapeDF)
 
-## Step 2: Fetch the top N barcodes of each dataframe
-print("Fetching the top N barcodes of each dataframe...")
-top_final <- list()
-top_max <- list()
-x <- lapply(dataframes, fetchTop, n_intersect)
-for(element in x){
-  top_final <-append(top_final, element[1])
-  top_max <- append(top_max, element[2])
-}
-
-## Step 3: Color assignment for plotting
-print("Assigning colors for dynamics plots...")
-
-## create list of unique top.max barcodes across all data
-all.top.max = unique(data.table::rbindlist(top_max))
-all.top.max = all.top.max[,c(1,2)]
-all.top.max = all.top.max[order(-all.top.max$max),]
-dup.vec = duplicated(all.top.max$ID)
-all.top.max = all.top.max[!dup.vec,]
-
-## we limit the selection such that all barcodes with max frequency > '-t' are assigned a hex color
-threshold.top.max <- all.top.max[all.top.max$max >= min_freq_threshold, ]
-
-## we create a very long list of colors for low-frequency barcodes.
-top_colors <- readr::read_csv("./inst/extdata/top_colors2.csv")
-long.color.list = rep(top_colors$hex,50)
-long.color.list.random = sample(long.color.list)
-
-## As a result, all top max frequencies > '-t' are assigned a hex color
-top_colors = top_colors[1:length(threshold.top.max[[1]]),]
-threshold.top.max = cbind(threshold.top.max,top_colors)
-
-## Step 4: Plot dynamics
-print("Plotting the dynamics...")
-cat("Regarding the dynamics, do you want a linear model, a logarithmic model or both? (linear, log or both): ")
-#plot_choice <- "both"
-plot_choice <- readLines("stdin", n=1)
-plot_choice <- match.arg(plot_choice, c("log", "linear", "both"))
-
-for(i in 1:length(dataframes)) {
-  plotDynamics(dataframes[[i]], min_freq_threshold, cohort_names[[i]], plot_choice)
-  }
-
+# ## Step 2: Fetch the top N barcodes of each dataframe
+# print("Fetching the top N barcodes of each dataframe...")
+# top_final <- list()
+# top_max <- list()
+# x <- lapply(dataframes, fetchTop, n_intersect)
+# for(element in x){
+#   top_final <-append(top_final, element[1])
+#   top_max <- append(top_max, element[2])
+# }
+#
+# ## Step 3: Color assignment for plotting
+# print("Assigning colors for dynamics plots...")
+#
+# ## create list of unique top.max barcodes across all data
+# all.top.max = unique(data.table::rbindlist(top_max))
+# all.top.max = all.top.max[,c(1,2)]
+# all.top.max = all.top.max[order(-all.top.max$max),]
+# dup.vec = duplicated(all.top.max$ID)
+# all.top.max = all.top.max[!dup.vec,]
+#
+# ## we limit the selection such that all barcodes with max frequency > '-t' are assigned a hex color
+# threshold.top.max <- all.top.max[all.top.max$max >= min_freq_threshold, ]
+#
+# ## we create a very long list of colors for low-frequency barcodes.
+# top_colors <- readr::read_csv("./inst/extdata/top_colors2.csv")
+# long.color.list = rep(top_colors$hex,50)
+# long.color.list.random = sample(long.color.list)
+#
+# ## As a result, all top max frequencies > '-t' are assigned a hex color
+# top_colors = top_colors[1:length(threshold.top.max[[1]]),]
+# threshold.top.max = cbind(threshold.top.max,top_colors)
+#
+# ## Step 4: Plot dynamics
+# print("Plotting the dynamics...")
+# cat("Regarding the dynamics, do you want a linear model, a logarithmic model or both? (linear, log or both): ")
+# #plot_choice <- "both"
+# plot_choice <- readLines("stdin", n=1)
+# plot_choice <- match.arg(plot_choice, c("log", "linear", "both"))
+#
+# for(i in 1:length(dataframes)) {
+#   plotDynamics(dataframes[[i]], min_freq_threshold, cohort_names[[i]], plot_choice)
+#   }
+#
 # ## Step 5: Calculate diversity
 # print("Calculating the diversities...")
 # diversities <- lapply(input_data, calculate_diversity)
@@ -239,7 +239,7 @@ for(i in 1:length(input_data)){
 for(i in 1:length(filtered_dataframes)) {
 
   cat(paste("Enter the chosen threshold for", cohort_names[[i]], ": "))
-  #selected_threshold <-0.7
+  #selected_threshold <-0.1
   selected_threshold <- as.numeric(readLines("stdin", n=1))
 
   selected_clusters = perform_hierarchical_clustering(filtered_dataframes[[i]], cohort_names[[i]], linkage, clustering, covariance, selected_threshold)

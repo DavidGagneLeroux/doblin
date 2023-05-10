@@ -57,19 +57,36 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
     #minimum_freq <-1e-03
     minimum_freq <- as.numeric(readLines("stdin", n=1))
 
-    series.reshaped.2 = series.reshaped %>%  dplyr::group_by(cluster) %>% dplyr::filter(length(unique(ID)) < n_members) %>% mutate(mean_freq = mean(value)) %>% dplyr::filter(mean_freq >= minimum_freq)
+    series.reshaped.2 = series.reshaped %>%  dplyr::group_by(cluster) %>% dplyr::filter(length(unique(ID)) < n_members) %>% dplyr::mutate(mean_freq = mean(value)) %>% dplyr::filter(mean_freq >= minimum_freq)
     series.reshaped.2$mean_freq = NULL
 
     series.reshaped = rbind(series.reshaped.1, series.reshaped.2)
 
   }
 
+  # WE ORDER THE CLUSTERS ACCORDING TO A MEAN OF THEIR FINAL FREQUENCY (FREQUENCY DURING LAST GENERATION)
+  series.ordered=subset(series.reshaped,series.reshaped$variable==max(unique(series.reshaped$variable)))
+
+  series.ordered=series.ordered %>%
+    dplyr::group_by(cluster) %>%
+    dplyr::summarise(average = mean(value))
+
+  series.ordered=series.ordered[order(series.ordered$average,decreasing = TRUE), ]
+
+  series.ordered$cluster_order = seq(1:nrow(series.ordered))
+  series.ordered$average = NULL
+
+  clustered_series = merge(series.reshaped, series.ordered, by="cluster")
+  clustered_series$cluster = NULL
+  clustered_series$rank = NULL
+  colnames(clustered_series)[5] = "cluster"
+  colnames(clustered_series)[4] = "frequency"
+  colnames(clustered_series)[3] = "time"
+
+  ## Write clustered_series
+  readr::write_csv(clustered_series,file = paste(output_directory, sample_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
+
   clusters_dataframe = apply_LOESS(series.reshaped, effective.breaks, sample_name)
-
-  ## Write series.reshape
-  readr::write_csv(series.reshaped,file = paste(output_directory, sample_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
-
-
   ## loesss
   #TODO: considérer plusieurs cluster.df
   clusters_dataframe$cluster=paste("C",clusters_dataframe$cluster,sep="")
