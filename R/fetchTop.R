@@ -1,21 +1,17 @@
-#' A fetch function
+#' A fetching function
 #'
-#' This function allows you to fetch the top N barcodes per sample.
-#' The top N barcodes are recovered according to their maximum and final frequencies.
+#' This function allows you to retrieve the top N_LINEAGES barcodes.
+#' The top N_LINEAGES barcodes are recovered according to their maximum frequencies.
 #'
-#' @param reshaped_df a dataframe produced by reshapeDF()
-#' @param n_intersect integer representing the number of barcodes to fetch
-#' @return A list containing 2 dataframes: top N barcodes according to their final
-#'  frequencies and top N barcodes according to their maximum frequencies.
+#' @param reshaped_df a dataframe returned by reshapeData()
+#' @param N_LINEAGES integer representing the number of barcodes to fetch
+#' @return top 1000 barcodes according to their maximum frequencies.
 #' @export fetchTop
 
-fetchTop <- function(reshaped_df, n_intersect) {
-  df.top = unique(reshaped_df[,1:4])
-  df.top.final = df.top[order(-df.top$final),]
-  df.top.max = df.top[order(-df.top$max),]
+fetchTop <- function(reshaped_df, N_LINEAGES) {
 
-  df.top.final = df.top.final[1:n_intersect,]
-  df.top.max = df.top.max[1:n_intersect,]
+  df_top_max = unique(reshaped_df[,1:4])
+  df_top_max = df_top_max[1:N_LINEAGES,]
 
-  return(list(df.top.final,df.top.max))
+  return(df_top_max)
 }

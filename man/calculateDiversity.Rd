@@ -9,7 +9,7 @@
 \alias{calculate_q_inf}
 \title{A function to calculate a sample's diversity}
 \usage{
-calculate_diversity(data)
+calculate_diversity(input_data)
 
 format_sample(sample)
 
@@ -20,18 +20,17 @@ calculate_q_1(mat)
 calculate_q_inf(mat)
 }
 \arguments{
-\item{data}{reshaped data produced by format_sample()}
+\item{input_data}{input dataframe given by user}
 
 \item{sample}{input dataframe given by user}
 
-\item{mat}{matrix containing number of barcodes for each ID over each time-point}
+\item{mat}{matrix containing the number of barcodes (READS) for each ID over each time-point}
 }
 \value{
 A dataframe containing all diversity indices for a sample.
 }
 \description{
-Her, we compute barcode diversity for all samples and create dataframes with
-diversities per cohort.
+Here, we compute the input's barcode diversity.
 This file contains multiple functions. The main function is: calculate_diversity()
 and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
 While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity

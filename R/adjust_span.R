@@ -10,9 +10,6 @@
 #' @export adjust_span
 
 adjust_span <- function(x, y, span) {
-  # x = variable
-  # y = value
-  # span = 0.2
   fit <- suppressWarnings(loess(log10(y+0.0000001) ~ x, span = span))
   if (inherits(fit, "try-error")) {
     # If loess() returns an error, try again with a smaller span

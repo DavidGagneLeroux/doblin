@@ -1,38 +1,39 @@
 #' A reshape function
 #'
-#' This function allows you to reshape data for plotting. The given input is a
-#' long-data format with ID, Time and Reads columns. We reshape it to have a resulting
-#' dataframe containing  each of ID's max, start, final and mean frequencies.
+#' This function allows you to reshape your data for further manipulation.
+#' The given input is a format with ID, Time and Reads columns.
+#' We reshape it to obtain a dataframe containing the max, start, final and average frequencies of each ID.
 #'
-#' @param sample a dataframe produced by readr::read_csv
-#' @return A reshaped dataframe for efficient plotting.
-#' @export reshapeDF
+#' @param input_data a dataframe with ID, Time and Reads columns.
+#' @return A dataframe containing the max, start, final and average frequencies of each ID in decreasing order of maximum frequency.
+#' @export reshapeData
 
-reshapeDF <- function(sample) {
+reshapeData <- function(input_data) {
 
-  ## Error message if raw_df doesn't have the appropriate format
-  testing_colnames <- identical(colnames(sample), c("ID", "Time", "Reads"))
+  ## Error message if input_data doesn't have the appropriate format
+  testing_colnames <- identical(colnames(input_data), c("ID", "Time", "Reads"))
   if (testing_colnames == FALSE){
     stop("# The input data format has not been respected. Make sure your input file contains 3 columns named: ID, Time and Reads.")
   }
 
   ## Error message if the values of 'Reads' are not numeric
-  if (is.numeric(sample$Reads) == FALSE){
+  if (is.numeric(input_data$Reads) == FALSE){
     stop("# The values in 'Reads' column must be numeric.")
   }
 
   ## Error message if the values of 'Reads' are not numeric
-  if (is.numeric(sample$Time) == FALSE){
+  if (is.numeric(input_data$Time) == FALSE){
     stop("# The values in 'Time' column must be numeric.")
   }
 
-  sample$Reads = as.numeric(as.character(sample$Reads))
-  # "table" uses "sample"'s IDs as IDs, Time values as column variables and Reads values as table values
-  table = reshape2::dcast(sample, ID ~ Time, value.var = 'Reads')
+  # "table" uses "input_data"'s IDs as IDs, Time as variables and Reads as values
+  table = reshape2::dcast(input_data, ID ~ Time, value.var = 'Reads')
+
   # converts a 'data.table' into a 'matrix'
   m = as.matrix(table[,-1])
+
   # converts a 'matrix' into a 'dataframe'
-  mat = as.data.frame(sweep(m,2,colSums(m,na.rm = TRUE),`/`))
+  mat = as.data.frame(sweep(m,2,colSums(m,na.rm = TRUE),`/`)) # we normalize READS to get the frequencies/abundances
   mat$ID = table$ID
   mat[,"mean"] = apply(mat[,-ncol(mat), drop=F],1, mean,na.rm=TRUE)
   mat[,"max"] = apply(mat[,-c(ncol(mat),ncol(mat)-1), drop=F],1, max,na.rm=TRUE)
@@ -41,16 +42,18 @@ reshapeDF <- function(sample) {
 
   # reshaping mat dataframe into long-format data
   df = reshape2::melt(mat,id.vars = c('ID','max','start','final','mean'))
-  df$variable = as.numeric(levels(df$variable))[df$variable]
-
+  names(df)[names(df) == 'variable'] <- 'Time'
+  names(df)[names(df) == 'value'] <- 'Frequency'
+  df$Time = as.numeric(levels(df$Time))[df$Time]
   df$ID = as.factor(df$ID)
 
-  if (any(is.na(df$value))){
-    df[is.na(df$value),]$value = 0
+  # Set NAs to 0
+  if (any(is.na(df$Frequency))){
+    df[is.na(df$Frequency),]$Frequency = 0
   }
 
-  tf = df[order(df$max),]
+  df = df[order(df$max, decreasing = TRUE),]
 
-  return(tf)
+  return(df)
 }
 

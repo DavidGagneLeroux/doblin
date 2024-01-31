@@ -1,10 +1,10 @@
 Package: doblin
-Title: What the Package Does (One Line, Title Case)
+Title: Doblin: Extraction of Dominant barcoded lineages
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description:Given a time series of cell line abundance, Doblin extracts clonal lineages. These clonal lineages can be used to impute the clonal dynamics of a biological system. To retrieve the clonal lineages, we group cell lines with similar trajectories (based on either Pearson's or DTW similarity metric) and consider the corresponding LOESS curve.
 Imports:
     grid,
     ggthemes,

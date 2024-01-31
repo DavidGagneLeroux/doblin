@@ -4,18 +4,17 @@
 \alias{plotDynamics}
 \title{A plot function}
 \usage{
-plotDynamics(raw_df, freq_threshold, cohort_name, plot_model)
+plotDynamics(reshaped_df, colored_topFreq_df, min_freq_threshold, plot_model)
 }
 \arguments{
-\item{raw_df}{a dataframe produced by reshapeDF()}
+\item{reshaped_df}{a dataframe produced by reshapeData()}
 
-\item{freq_threshold}{a double representing a limit frequency above which barcodes have assigned colors}
+\item{colored_topFreq_df}{a dataframe containing the top barcodes with their respective colors}
 
-\item{cohort_name}{a character string indicating the sample's name}
+\item{min_freq_threshold}{a double representing the minimum frequency above which barcodes are assigned colors}
 
 \item{plot_model}{a character string indicating what kind of plot the user wants to model}
 }
 \description{
-This function allows you to plot barcode dynamics (linear plot and
-log-transformed plot).
+This function allows you to plot barcode dynamics (logarithmic-scale and/or linear-scale).
 }

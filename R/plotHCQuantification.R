@@ -10,57 +10,14 @@
 #' according to the threshold.
 #'
 #' @name plotHCQuantification
-#' @param filtered_data a dataframe filtered by filterData()
-#' @param clusters a dataframe containing the clusters from a hierarchical clustering
-#'  for one or multiple thresholds
-#' @param sample_name a character string indicating the sample's name
-#' @param n_members an integer indicating the minimum number of members per cluster
+#' @param clusters_filtered a dataframe filtered by filterHC()
 #' @import dplyr
 #' @import ggplot2
 #' @export plotHCQuantification
 
-plotHCQuantification <- function(filtered_data, clusters, sample_name, n_members){
+plotHCQuantification <- function(clusters_filtered){
 
-  #clusters = clusters_df
-  #filtered_data = filtered_dataframes[[1]]
-  #sample_name = cohort_names[[1]]
-  #n_members = min_members
-
-  ## rank is just a way to numerate each barcode
-  nRank = nrow(clusters)
-  clusters$rank = seq(1:nRank)
-  clusters_long=reshape2::melt(clusters,id.vars = c("rank"))
-  colnames(clusters_long)=c("rank","cutoff","cluster")
-
-  series.filtered <- filtered_data
-  series.filtered$points = NULL
-  series.filtered$rank=seq(1:nRank)
-  series.filtered_long=reshape2::melt( series.filtered,id.vars = c('ID','rank','mean'))
-
-  ## series.reshaped is a dataframe where "variable" represents the time-point (ex:1-18) and value
-  ## represents the barcode frequencies
-  series.reshaped = merge(series.filtered_long,clusters_long,by.x = "rank",by.y = "rank", all = TRUE)
-  series.reshaped$variable = as.numeric(as.character(series.reshaped$variable))
-
-  ## Group by cluster and keep only the clusters with at least n_members members
-  series.reshaped.1=series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) >= n_members)
-
-  ## To avoid ignoring the dominant barcodes, which might be in smaller clusters, we add a second criteria:
-  if(nrow(series.reshaped.1) != nrow(series.reshaped)){
-
-    cat("You might be ignoring dominant barcodes, please enter a minimum mean frequency that must be reached by at least one of the members for the cluster to be considered: ")
-    #minimum_freq <-1e-03
-    minimum_freq <- as.numeric(readLines("stdin", n=1))
-
-    series.reshaped.2 = series.reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) < n_members) %>% mutate(mean_freq = mean(value)) %>% dplyr::filter(mean_freq >= minimum_freq)
-    series.reshaped.2$mean_freq = NULL
-
-    series.reshaped = rbind(series.reshaped.1, series.reshaped.2)
-
-  }
-
-  clusters_dataframe = applyLOESS(series.reshaped)
-  rm(series.reshaped.1, series.reshaped.2, series.reshaped)
+  clusters_dataframe = applyLOESS(clusters_filtered)
 
   clusters_dataframe$cluster=as.factor(as.integer(clusters_dataframe$cluster))
   clusters_dataframe$cutoff=as.numeric(as.character(clusters_dataframe$cutoff))
@@ -87,7 +44,7 @@ plotHCQuantification <- function(filtered_data, clusters, sample_name, n_members
     dplyr::mutate(cluster=max(cluster),id=paste(iso1,iso2 ,sep="_")) %>%
     dplyr::summarise(dist_small=min(dist),cluster=max(cluster))
 
-  readr::write_csv(smallest_distance,file = paste(output_directory, sample_name, "_threshold_selection.csv",sep=""),col_names = TRUE)
+  readr::write_csv(smallest_distance,file = paste(output_directory, input_name, "_threshold_selection.csv",sep=""),col_names = TRUE)
 
   rm(distance_pairwise)
 
@@ -96,10 +53,10 @@ plotHCQuantification <- function(filtered_data, clusters, sample_name, n_members
   ## Plot the quantification
 
   choose_threshold = ggplot(smallest_distance,aes(as.numeric(as.character(cutoff)),dist_small))+ geom_line(color="black", size=2.5) +
-    theme_Publication() + geom_line(aes(as.numeric(as.character(cutoff)), as.integer(as.character(cluster))*scale), size = 2, color = "darkblue") +
-    scale_y_continuous(sec.axis = sec_axis(~./scale,name="Cluster number")) + scale_x_reverse() +xlab("Threshold") + ylab("Distance")
+    theme_Publication() + geom_line(aes(as.numeric(as.character(cutoff)), as.integer(as.character(cluster))*scale), size = 2, color = "#56B4E9") +
+    scale_y_continuous(sec.axis = sec_axis(~./scale,name="Number of clusters")) + scale_x_reverse() +xlab("Threshold") + ylab("Distance between clusters")
 
-  ggsave(choose_threshold,filename =  paste(output_directory,sample_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
+  ggsave(choose_threshold,filename =  paste(output_directory,input_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
 }
 
 #################
@@ -125,35 +82,33 @@ melt_dist <- function(dist, order = NULL, dist_name = 'dist') {
 #' @export
 #' @rdname plotHCQuantification
 
-applyLOESS <- function(series_reshaped){
+applyLOESS <- function(clusters_filtered){
 
-  #series_reshaped = series.reshaped.2
-  #i=5
   ## Keep only the persistent barcodes
-  series_order=subset(series_reshaped,series_reshaped$variable==max(unique(series_reshaped$variable)))
+  series_order=subset(clusters_filtered,clusters_filtered$Time==max(unique(clusters_filtered$Time)))
 
   series_order=series_order %>%
     dplyr::group_by(cluster,cutoff) %>%
-    dplyr::summarise(average = mean(value)) %>% dplyr::ungroup() %>%
+    dplyr::summarise(average = mean(Frequency)) %>% dplyr::ungroup() %>%
     dplyr::group_by(cutoff) %>%
     dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
 
   series_order$cluster2=as.integer(as.character(series_order$cluster2))
-  series_reshaped=merge(series_reshaped,series_order,by=c("cluster","cutoff"))
-  series_reshaped$cluster=NULL
-  names(series_reshaped)[8]="cluster"
+  clusters_filtered=merge(clusters_filtered,series_order,by=c("cluster","cutoff"))
+  clusters_filtered$cluster=NULL
+  names(clusters_filtered)[8]="cluster"
 
-  max.range = max(series_reshaped$variable)-min(series_reshaped$variable)
+  max.range = max(clusters_filtered$Time)-min(clusters_filtered$Time)
   loess.range = (max.range*10)+1
 
   ## Get moving average of barcode frequencies for each cluster USING LOESS
-  xx <- seq(from=min(series_reshaped$variable), to=max(series_reshaped$variable),length.out = loess.range)
+  xx <- seq(from=min(clusters_filtered$Time), to=max(clusters_filtered$Time),length.out = loess.range)
 
-  cluster.df=series_reshaped %>%  dplyr::group_by(cluster,cutoff) %>%
-    dplyr::summarise(model=predict(adjust_span(variable, value, span = 0.2),xx,se = FALSE))  %>%
+  cluster_df=clusters_filtered %>%  dplyr::group_by(cluster,cutoff) %>%
+    dplyr::summarise(model=predict(adjust_span(Time, Frequency, span = 0.2),xx,se = FALSE))  %>%
     dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
 
-  return(cluster.df)
+  return(cluster_df)
 }
 
 

@@ -1,138 +1,81 @@
 #' A plot function
 #'
-#' This function allows you to plot barcode dynamics (linear plot and
-#'  log-transformed plot).
+#' This function allows you to plot barcode dynamics (logarithmic-scale and/or linear-scale).
 #'
-#' @param raw_df a dataframe produced by reshapeDF()
-#' @param freq_threshold a double representing a limit frequency above which barcodes have assigned colors
-#' @param cohort_name a character string indicating the sample's name
+#' @param reshaped_df a dataframe produced by reshapeData()
+#' @param colored_topFreq_df a dataframe containing the top barcodes with their respective colors
+#' @param min_freq_threshold a double representing the minimum frequency above which barcodes are assigned colors
 #' @param plot_model a character string indicating what kind of plot the user wants to model
 #' @import ggplot2
 #' @export plotDynamics
 
-plotDynamics <- function(raw_df, freq_threshold, cohort_name, plot_model) {
+plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, plot_model) {
 
-  #raw_df=dataframes[[1]]
-  #freq_threshold=min_freq_threshold
-  #cohort_name=cohort_names[[1]]
-  #plot_model="linear"
+  colored_topFreq_df$max=NULL
+  colored_df = merge(reshaped_df, colored_topFreq_df, by = "ID",all.x = TRUE)
 
-  x_breaks = sort(c(unique(raw_df$variable)))
-  #log10_y_breaks = sort(c(unique(raw_df$value)))
-
-  threshold_top_max = threshold.top.max
-  threshold_top_max$max=NULL
-
-  # FOR CARTOON
-  #threshold_top_max$hex <- sample(colorRampPalette(c("#0D0887FF","#6A00A8FF","#26828EFF","#6DCD59FF", "#FCA636FF","#FDE725FF"))(n =47))
-
-
-  df = merge(raw_df, threshold_top_max, by = "ID",all.x = TRUE)
-  # FOR CARTOON
-  #df = merge(threshold_top_max, raw_df, by = "ID",all.x = TRUE)
-
-  # for all barcodes without a universal color (barcodes with max frequencies < threshold),
-  # assign a gray hex value
-  if (nrow(df[is.na(df$hex),]) > 0){
-    df[is.na(df$hex),]$hex="#cccccc"
+  # All barcodes with maximum frequency < min_freq_threshold are assigned a gray hex value
+  if (nrow(colored_df[is.na(colored_df$hex),]) > 0){
+    colored_df[is.na(colored_df$hex),]$hex="#cccccc"
   }
 
-
   # convert ID to factor for grouping
-  df$ID = as.factor(df$ID)
+  colored_df$ID = as.factor(colored_df$ID)
 
-  # important: order dataframe by max frequency; this will determine the stacking of areas in the plot
-  tf = df[order(df$max),]
+  # IMPORTANT: Dataframe is ordered by increasing maximum frequency; this will determine the stacking of areas in the linear plot
+  colored_df = colored_df[order(colored_df$max),]
 
-  # subset dataframe with barcodes above a certain max frequency
-  grouped_by = magrittr::`%>%`(tf, dplyr::group_by(hex))
-  filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>freq_threshold))
-  grouped_tf = magrittr::`%>%`(filtered, dplyr::ungroup())
+  # Subset dataframe with barcodes above a certain max frequency
+  grouped_by = magrittr::`%>%`(colored_df, dplyr::group_by(hex))
+  filtered = magrittr::`%>%`(grouped_by, dplyr::filter(max>min_freq_threshold))
+  grouped_df = magrittr::`%>%`(filtered, dplyr::ungroup())
 
-  # set color scale using universal hex colors
-  mycolors = grouped_tf$hex
-  names(mycolors) = grouped_tf$ID
+  rm(grouped_by)
 
-  # map factor levels to max frequencies
-  grouped_tf$ID = factor(grouped_tf$ID, levels = unique(grouped_tf$ID[order(grouped_tf$max)]))
-  tf$ID = factor(tf$ID, levels = unique(tf$ID[order(tf$max)]))
+  # Set color scale using universal hex colors
+  mycolors = grouped_df$hex
+  names(mycolors) = grouped_df$ID
 
-  # here we plot a first geom_area with all the barcodes using the long color list
+  # Map factor levels to max frequencies
+  grouped_df$ID = factor(grouped_df$ID, levels = unique(grouped_df$ID[order(grouped_df$max)]))
+  colored_df$ID = factor(colored_df$ID, levels = unique(colored_df$ID[order(colored_df$max)]))
+
+  # Here we plot a first geom_area with all the barcodes using the long color list
   # then we add a new fill scale, and plot a second geom_area on top of the first
   # using only the subsetted, high-freq barcodes
 
-  if (plot_model == "log"){
+  x_breaks = sort(c(unique(reshaped_df$Time)))
 
+  if (plot_model == "linear" || plot_model == "both"){
+    print("WARNING: Linear-scale plots are very heavy. This might take several minutes...")
 
-    # g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
-    #   scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
-    #   scale_fill_manual(values =mycolors,name="Cluster ID", guide="none") +
-    #   labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE) +
-    #   theme(axis.text.x = element_blank(),
-    #         axis.ticks.x = element_blank(),
-    #         axis.text.y = element_blank(),
-    #         axis.ticks.y = element_blank())
-    grDevices::cairo_ps(paste(output_directory, cohort_name,"_area.ps", sep=""),width = 8.25,height = 6)
+    grDevices::cairo_ps(paste(output_directory, input_name,"_area.eps", sep=""),width = 8.25,height = 6)
 
-    g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
-      ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
+    g = ggplot(colored_df) + geom_area(aes(x=Time,y=Frequency,group=ID,fill=ID),data=colored_df) + scale_fill_manual(values = LONG_COLOR_LIST_RAND, guide="none") +
+      ggnewscale::new_scale_fill() + geom_area(aes(x=Time,y=Frequency,group=ID,fill=ID),data=grouped_df) +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
       scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
-      labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
+      labs(x="Time" , y="Barcode frequency") + coord_cartesian(expand = FALSE)
 
     graphics::plot(g)
     grDevices::dev.off()
 
-  } else if(plot_model == "linear"){
+  }
+
+  if(plot_model == "logarithmic" || plot_model == "both"){
 
 
+    grDevices::cairo_ps(paste(output_directory, input_name,"_line.eps", sep=""),width = 8.25,height = 6)
 
-    # all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,size=1) +
-    #   theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors)+ labs(x ="Time" ,y="Barcode frequency") +
-    #   scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
-    #   guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE) +
-    #   theme(axis.text.x = element_blank(),
-    #         axis.ticks.x = element_blank(),
-    #         axis.text.y = element_blank(),
-    #         axis.ticks.y = element_blank())
-
-
-    grDevices::cairo_ps(paste(output_directory, cohort_name,"_line.ps", sep=""),width = 8.25,height = 6)
-
-    all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
-      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,linewidth=1) +
-      theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
+    all.line = ggplot() + geom_line(aes(x=Time,y=Frequency,group=ID),data=colored_df,colour="#CCCCCC",alpha=0.3) +
+      geom_line(aes(x=Time,y=Frequency,group=ID,colour=ID),data=grouped_df,linewidth=1) +
+      theme_Publication() + scale_y_log10(limits=c(min(colored_df$Frequency)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
-      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
-
-    graphics::plot(all.line)
-    grDevices::dev.off()
-
-  } else if(plot_model == "both"){
-
-    grDevices::cairo_ps(paste(output_directory, cohort_name,"_area.ps", sep=""),width = 8.25,height = 6)
-
-    g = ggplot(tf) + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=tf) + scale_fill_manual(values = long.color.list.random, guide=FALSE) +
-      ggnewscale::new_scale_fill() + geom_area(aes(x=variable,y=value,group=ID,fill=ID),data=grouped_tf) +
-      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
-      scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
-      labs(x="Time" , y="Barcode density") + coord_cartesian(expand = FALSE)
-
-    graphics::plot(g)
-    grDevices::dev.off()
-
-    grDevices::cairo_ps(paste(output_directory, cohort_name,"_line.ps", sep=""),width = 8.25,height = 6)
-
-    all.line = ggplot() + geom_line(aes(x=variable,y=value,group=ID),data=tf,colour="#CCCCCC",alpha=0.3) +
-      geom_line(aes(x=variable,y=value,group=ID,colour=ID),data=grouped_tf,linewidth=1) +
-      theme_Publication() + scale_y_log10(limits=c(min(tf$value)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
-      scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
-      guides(color = FALSE, shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
+      guides(color = "none", shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
 
     graphics::plot(all.line)
     grDevices::dev.off()
 
   }
-
 
 }

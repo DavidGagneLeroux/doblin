@@ -4,17 +4,15 @@
 \alias{plotDiversity}
 \title{A function to plot the diversity dynamics}
 \usage{
-plotDiversity(dataframe, cohort_names)
+plotDiversity(dataframe)
 }
 \arguments{
 \item{dataframe}{a dataframe containing the barcode diversities for each sample}
-
-\item{cohort_names}{a list containing the names of each sample}
 }
 \value{
 A plot of the diversity over time.
 }
 \description{
-This function allows you to plot barcode diversities for each sample. We save
+This function allows you to plot barcode diversities for a sample. We save
 a multi-panel figure with all diversities and the legend.
 }

@@ -2,33 +2,27 @@
 % Please edit documentation in R/performHClustering.R
 \name{perform_hierarchical_clustering}
 \alias{perform_hierarchical_clustering}
-\title{Get the clusters resulting from a hierarchical clustering of the clonal lineages.}
+\title{Get the clusters resulting from the hierarchical clustering of the barcoded lineages.}
 \usage{
 perform_hierarchical_clustering(
   filtered_data,
-  sample_name,
   linkage_method = c("average", "ward.D", "ward.D2", "centroid", "single", "complete",
     "median", "mcquitty"),
-  clustering_method = c("pearson", "dtw"),
-  covariance = NULL,
-  threshold = NULL
+  similarity_metric = c("pearson", "dtw"),
+  missing_values = NULL
 )
 }
 \arguments{
 \item{filtered_data}{a dataframe filtered by filterData()}
 
-\item{sample_name}{a character string indicating the sample's name}
-
 \item{linkage_method}{a character string indicating which method is to be used for linkage}
 
-\item{clustering_method}{a character string indicating which method is to be used for clustering}
+\item{similarity_metric}{a character string indicating which metric to be used to measure similarity between two time-series}
 
-\item{covariance}{a character string indicating which method is to be used to compute the covariance}
-
-\item{threshold}{an optional parameter to specify which threshold to use}
+\item{missing_values}{a character string indicating which method is to be used to manage missing values while computing covariances}
 }
 \value{
-A dataframe containing the clusters from a hierarchical clustering
+A dataframe containing the resulting clusters of a hierarchical clustering
 for one or multiple thresholds
 }
 \description{
@@ -37,8 +31,7 @@ according to pearson's or dtw's approach. From the resulting matrix, we proceed
 to a hierarchical clustering of the data according to a given linkage method.
 Then, in order to visualize the results,we plot a dendrogram and a heatmap.
 Finally, if no threshold is provided, we compute the relative clusters for ALL
-thresholds between 0.1 and max height of hierarchical clustering. This step allows the
+thresholds between 0.1 and maximum height of hierarchical clustering tree. This step allows the
 user to visualize the possible clusters and make an informed choice about which
-threshold to use.If a threshold is provided, the function returns a dataframe
-containing the clusters related to that threshold.
+threshold to use.
 }

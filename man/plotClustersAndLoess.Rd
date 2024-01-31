@@ -13,28 +13,19 @@ An object of class \code{character} of length 26.
 \usage{
 cluster.colors
 
-plotClusterLog10(df, cluster, sample, color, tf, effective.breaks)
+plotClusterLog10(df, cluster, color, tf, effective.breaks)
 
-apply_LOESS(series_reshaped, effective.breaks, sample_name)
+apply_LOESS(c_series)
 }
 \arguments{
-\item{effective.breaks}{a list containing the breaks for the plots}
-
-\item{sample_name}{a character string indicating the sample's name}
-
-\item{series.filtered}{a dataframe filtered by filterData()}
-
-\item{selected.clusters}{A dataframe containing the clusters from a hierarchical clustering
+\item{selected_clusters}{A dataframe containing the clusters from a hierarchical clustering
 for a specific threshold}
-
-\item{n_members}{an integer indicating the minimum number of members per cluster}
 }
 \description{
 This file contains multiple functions. The main function is: plot_clusters_and_loess()
-and it uses plotClusterLog10() and applyLOESS(). plot_clusters_and_loess() starts in
-the same way as plotHCQuantification(), but without a cutoff column. In plot_clusters_and_loess(),
+and it uses plotClusterLog10() and apply_LOESS(). In plot_clusters_and_loess(),
 we plot the log10-transformed barcode frequencies contained in all selected clusters,
 we compute a moving average per cluster and group them in a plot. We also write the files associated with
-those two plots.
+these two plots.
 }
 \keyword{datasets}

@@ -6,21 +6,14 @@
 \alias{applyLOESS}
 \title{Plot hierarchical clustering quantification}
 \usage{
-plotHCQuantification(filtered_data, clusters, sample_name, n_members)
+plotHCQuantification(clusters_filtered)
 
 melt_dist(dist, order = NULL, dist_name = "dist")
 
-applyLOESS(series_reshaped)
+applyLOESS(clusters_filtered)
 }
 \arguments{
-\item{filtered_data}{a dataframe filtered by filterData()}
-
-\item{clusters}{a dataframe containing the clusters from a hierarchical clustering
-for one or multiple thresholds}
-
-\item{sample_name}{a character string indicating the sample's name}
-
-\item{n_members}{an integer indicating the minimum number of members per cluster}
+\item{clusters_filtered}{a dataframe filtered by filterHC()}
 }
 \description{
 This file contains multiple functions. The main function is plotHCQuantification()

@@ -1,24 +1,23 @@
 #' A function to calculate a sample's diversity
 #'
-#' Her, we compute barcode diversity for all samples and create dataframes with
-#' diversities per cohort.
+#' Here, we compute the input's barcode diversity.
 #' This file contains multiple functions. The main function is: calculate_diversity()
 #' and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
 #' While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity
 #' index for different q-values, calculate_diversity() binds the indices together.
 #'
 #' @name calculateDiversity
-#' @param data reshaped data produced by format_sample()
+#' @param input_data input dataframe given by user
 #' @param sample input dataframe given by user
-#' @param mat matrix containing number of barcodes for each ID over each time-point
+#' @param mat matrix containing the number of barcodes (READS) for each ID over each time-point
 #' @return A dataframe containing all diversity indices for a sample.
 #' @export calculate_diversity
 
 
 ## GENERATE DIVERSITY DATAFRAME FOR ONE SIMULATION
-calculate_diversity <- function(data){
+calculate_diversity <- function(input_data){
 
-  generations = format_sample(data)
+  generations = format_sample(input_data)
   m = as.matrix(generations[,-1])
 
   mat = as.data.frame(sweep(m,2,colSums(m,na.rm = TRUE),`/`))

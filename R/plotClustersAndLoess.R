@@ -1,19 +1,14 @@
 #' Plot the log10-transformed barcode frequencies and the moving averages (LOESS)
 #'
 #' This file contains multiple functions. The main function is: plot_clusters_and_loess()
-#' and it uses plotClusterLog10() and applyLOESS(). plot_clusters_and_loess() starts in
-#' the same way as plotHCQuantification(), but without a cutoff column. In plot_clusters_and_loess(),
+#' and it uses plotClusterLog10() and apply_LOESS(). In plot_clusters_and_loess(),
 #' we plot the log10-transformed barcode frequencies contained in all selected clusters,
 #' we compute a moving average per cluster and group them in a plot. We also write the files associated with
-#' those two plots.
+#' these two plots.
 #'
 #' @name plotClustersAndLoess
-#' @param series.filtered a dataframe filtered by filterData()
-#' @param selected.clusters  A dataframe containing the clusters from a hierarchical clustering
+#' @param selected_clusters  A dataframe containing the clusters from a hierarchical clustering
 #'  for a specific threshold
-#' @param sample_name a character string indicating the sample's name
-#' @param effective.breaks a list containing the breaks for the plots
-#' @param n_members an integer indicating the minimum number of members per cluster
 #' @import dplyr
 #' @import ggplot2
 #' @export plot_clusters_and_loess
@@ -22,56 +17,47 @@ cluster.colors=c("#3cb44b","#4363d8","#e6194B","#e8ca00","#911eb4","#f58231","#2
                  "#2F4C39", "#1D3F6E","#94170f","#665679","#F17829","#97A69C","#606EA9","#A9606E","#A99060","#F8F1AE",
                  "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8")
 
-plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_name, effective.breaks, n_members){
+plot_clusters_and_loess <- function(selected_clusters){
 
-  #series.filtered = filtered_dataframes[[1]]
-  #sample_name = "m1"
-  #selected.clusters=selected_clusters
-  #effective.breaks = breaks[[1]]
-  #n_members = 8
+#######################################################################
+# Clusters are ordered according to two criteria:
+# 1) Clusters with a non-zero mean frequency at the last time point are ranked in descending order;
+# 2) Clusters with an average frequency of zero at the last time point are ranked in descending order of disappearance: from the last extinct to the first extinct.
 
-  effective.labels = as.character(effective.breaks)
-  effective.limits = c(min(effective.breaks), max(effective.breaks))
 
-  colnames(selected.clusters)=c("cluster")
-  nRank = nrow(selected.clusters)
-  selected.clusters$rank = seq(1:nRank)
-
-  series.filtered$points = NULL
-  series.filtered$rank=seq(1:nRank)
-
-  grouped.clusters = merge(series.filtered,selected.clusters,by.x = "rank",by.y = "rank")
-
-  ## series.reshaped is a dataframe where "variable" represents the time-point (1-18) and value
-  ## represents the barcode frequencies
-  series.reshaped = reshape2::melt(grouped.clusters,id.vars = c('ID','cluster','rank','mean'))
-  series.reshaped$variable = as.numeric(as.character(series.reshaped$variable))
-
-  ## Group by cluster and keep only the clusters with at least n_members members
-  series.reshaped.1=series.reshaped %>%  dplyr::group_by(cluster) %>% dplyr::filter(length(unique(ID)) >= n_members)
-
-  ## To avoid ignoring the dominant barcodes, which might be in smaller clusters, we add a second criteria:
-  if(nrow(series.reshaped.1) != nrow(series.reshaped)){
-
-    cat("You might be ignoring dominant barcodes, please enter a minimum mean frequency that must be reached by at least one of the members for the cluster to be considered: ")
-    #minimum_freq <-1e-03
-    minimum_freq <- as.numeric(readLines("stdin", n=1))
-
-    series.reshaped.2 = series.reshaped %>%  dplyr::group_by(cluster) %>% dplyr::filter(length(unique(ID)) < n_members) %>% dplyr::mutate(mean_freq = mean(value)) %>% dplyr::filter(mean_freq >= minimum_freq)
-    series.reshaped.2$mean_freq = NULL
-
-    series.reshaped = rbind(series.reshaped.1, series.reshaped.2)
-
-  }
-
-  # WE ORDER THE CLUSTERS ACCORDING TO A MEAN OF THEIR FINAL FREQUENCY (FREQUENCY DURING LAST GENERATION)
-  series.ordered=subset(series.reshaped,series.reshaped$variable==max(unique(series.reshaped$variable)))
+# 1)
+  series.ordered=subset(selected_clusters,selected_clusters$Time==max(unique(selected_clusters$Time)))
 
   series.ordered=series.ordered %>%
     dplyr::group_by(cluster) %>%
-    dplyr::summarise(average = mean(value))
+    dplyr::summarise(average = mean(Frequency))
 
   series.ordered=series.ordered[order(series.ordered$average,decreasing = TRUE), ]
+
+# 2)
+  series.reshaped <- arrange(selected_clusters, cluster, Time)
+
+  # cumulative frequency per time point (for each cluster)
+  series.reshaped <- series.reshaped %>%
+    group_by(cluster,Time) %>%
+    mutate(cumulative_freq = sum(Frequency))
+
+  unique_rows <- distinct(series.reshaped, cluster, Time, cumulative_freq)
+
+  first_occurrence_rows <- unique_rows %>% group_by(cluster) %>% filter(cumulative_freq == 0) %>% slice(1)
+
+  df_ordered <- arrange(first_occurrence_rows, desc(Time))
+
+# Merging 1) & 2)
+  persistent_clusters <- subset(series.ordered, average > 0)
+  nonpersistent_clusters <- subset(series.ordered, average == 0)
+
+  index <- match(nonpersistent_clusters$cluster, df_ordered$cluster)
+  nonpersistent_matched <- nonpersistent_clusters[order(index), ]
+
+  series.ordered = rbind(persistent_clusters, nonpersistent_matched)
+  series.reshaped$cumulative_freq = NULL
+#####################################################################################
 
   series.ordered$cluster_order = seq(1:nrow(series.ordered))
   series.ordered$average = NULL
@@ -79,27 +65,36 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
   clustered_series = merge(series.reshaped, series.ordered, by="cluster")
   clustered_series$cluster = NULL
   clustered_series$rank = NULL
+  clustered_series$cutoff = NULL
   colnames(clustered_series)[5] = "cluster"
   colnames(clustered_series)[4] = "frequency"
   colnames(clustered_series)[3] = "time"
 
   ## Write clustered_series
-  readr::write_csv(clustered_series,file = paste(output_directory, sample_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
+  readr::write_csv(clustered_series,file = paste(output_directory, input_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
 
-  clusters_dataframe = apply_LOESS(series.reshaped, effective.breaks, sample_name)
-  ## loesss
-  #TODO: considérer plusieurs cluster.df
+  clusters_dataframe = apply_LOESS(clustered_series)
+  ## loess
   clusters_dataframe$cluster=paste("C",clusters_dataframe$cluster,sep="")
   clusters_dataframe$time=clusters_dataframe$time*10
   clusters.loess <- tidyr::spread(clusters_dataframe, cluster, value)
 
+  # csv of loess plot
+  readr::write_csv(clusters_dataframe,file=paste0(output_directory, input_name, "_loess_clusters.csv"),col_names = TRUE)
   # plot loess
+  effective.breaks <- sort(c(unique(clustered_series$time)))
+  effective.labels = as.character(effective.breaks)
+  effective.limits = c(min(effective.breaks), max(effective.breaks))
+
+  clusters_dataframe$cluster <- factor(clusters_dataframe$cluster, levels = unique(clusters_dataframe$cluster))
   loess.plot = ggplot(clusters_dataframe) + geom_line(aes(x=time/10,y=10^(value),group=cluster,color=cluster),size=1) + scale_x_continuous(limits = effective.limits) +
-    theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("Clone frequency") + xlab("Time") + scale_y_log10(limits=c(min(10^clusters_dataframe$value),1e0))
-  ggsave(loess.plot,filename = paste(output_directory, sample_name, "_loess_clusters_log10.eps", sep=""),width = 8.25,height = 6)
+    theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("Clone frequency") + xlab("Time") +
+    scale_y_log10(limits=c(min(10^clusters_dataframe$value)+1e-7,1e0))+ coord_cartesian(expand = FALSE)
+  ggsave(loess.plot,filename = paste(output_directory, input_name, "_loess_clusters_log10.eps", sep=""),width = 8.25,height = 6)
 
   # write loess file
-  readr::write_csv(clusters.loess,file = paste(output_directory, sample_name, "_clustered_loess_log10.csv",sep=""),col_names = TRUE)
+  readr::write_csv(clusters.loess,file = paste(output_directory, input_name, "_clustered_loess_log10.csv",sep=""),col_names = TRUE)
+  print("DONE")
 
 }
 
@@ -108,17 +103,15 @@ plot_clusters_and_loess <- function(series.filtered, selected.clusters, sample_n
 #' @rdname plotClustersAndLoess
 
 # plot clusters
-plotClusterLog10 <- function(df,cluster,sample,color,tf, effective.breaks){
+plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
 
   effective.labels = as.character(effective.breaks)
   effective.limits = c(min(effective.breaks), max(effective.breaks))
 
-  # grDevices::cairo_ps(paste(output_directory, sample, "_cluster", cluster, "_log10.ps", sep=""),width = 5.5,height = 4)
-
-  p = ggplot(df,aes(x=variable,y=value)) +
+  p = ggplot(df,aes(x=time,y=frequency)) +
     geom_line(aes(group=ID),color=color) + theme_Publication(base_size = 18) +
-    scale_y_log10(limits=c(min(df$value)+1e-7,1e0)) +
-    labs(x = "Time",y="lineage frequency") + guides(color = FALSE) +
+    scale_y_log10(limits=c(min(df$frequency)+1e-7,1e0)) +
+    labs(x = "Time",y="Barcode frequency") + guides(color = FALSE) +
     scale_x_continuous(limits = effective.limits) +
     coord_cartesian(expand = FALSE) + geom_line(data=tf,aes(time,10^value),color="black") +
     annotate("text", y=-0.75, x = 3,label=paste("n",length(unique(df$ID)),sep=" = "),hjust=0,size=5) +
@@ -127,7 +120,7 @@ plotClusterLog10 <- function(df,cluster,sample,color,tf, effective.breaks){
   # graphics::plot(p)
   # grDevices::dev.off()
 
-  ggsave(p,filename =  paste(output_directory, sample, "_cluster", cluster, "_log10.eps", sep=""),width = 5.5,height = 4)
+  ggsave(p,filename =  paste(output_directory, input_name, "_cluster", cluster, "_log10.eps", sep=""),width = 5.5,height = 4)
 
   return(p)
 }
@@ -136,47 +129,28 @@ plotClusterLog10 <- function(df,cluster,sample,color,tf, effective.breaks){
 #' @export
 #' @rdname plotClustersAndLoess
 
-apply_LOESS <- function(series_reshaped, effective.breaks, sample_name){
+apply_LOESS <- function(c_series){
 
-  #series_reshaped <- series.reshaped
-
-  ## Keep only the persistent barcodes
-  ## series_order only contains the data regarding the last generation/time-point
-  series_order=subset(series_reshaped,series_reshaped$variable==max(unique(series_reshaped$variable)))
-
-  series_order=series_order %>%
-    dplyr::group_by(cluster) %>%
-    dplyr::summarise(average = mean(value))
-
-  series_order=series_order[order(series_order$average,decreasing = TRUE), ]
-  series_order$cluster_ranked=as.numeric(rownames(series_order))
-  series_reshaped=merge(series_reshaped,series_order,by="cluster")
-  series_reshaped$cluster=NULL
-  names(series_reshaped)[7]="cluster"
-  clusters.ranked=series_order$cluster_ranked
-
-  max.range = max(series_reshaped$variable)-min(series_reshaped$variable)
+  max.range = max(c_series$time)-min(c_series$time)
   loess.range = (max.range*10)+1
 
   ## Get moving average of barcode frequencies for each cluster USING LOESS
-  xx <- seq(from=min(series_reshaped$variable), to=max(series_reshaped$variable),length.out = loess.range)
+  xx <- seq(from=min(c_series$time), to=max(c_series$time),length.out = loess.range)
 
-  cluster.df=series_reshaped %>%  dplyr::group_by(cluster) %>%
-    dplyr::summarise(value=predict(adjust_span(variable, value, span = 0.2),xx,se = FALSE))  %>%
+  cluster.df=c_series %>%  dplyr::group_by(cluster) %>%
+    dplyr::summarise(value=predict(adjust_span(time, frequency, span = 0.2),xx,se = FALSE))  %>%
     dplyr::group_by(cluster) %>% dplyr::mutate(time=xx)
 
   ## Plot log10-transformed barcode frequencies
   plotList = list()
 
-  for(i in seq_along(unique(series_reshaped$cluster))){
-    l = plotClusterLog10(series_reshaped[series_reshaped$cluster==clusters.ranked[i],], clusters.ranked[i], sample_name, cluster.colors[i],cluster.df[cluster.df$cluster==clusters.ranked[i],], effective.breaks)
+  effective.breaks = sort(c(unique(c_series$time)))
+
+  for(i in seq_along(unique(c_series$cluster))){
+    l = plotClusterLog10(c_series[c_series$cluster==i,], i, cluster.colors[i], cluster.df[cluster.df$cluster==i,], effective.breaks)
     plotList[[i]]=l
 
   }
-
-
-  #top10.log =cowplot::plot_grid(plotlist=plotList, align = "hv",axis="tblr")
-  #ggsave(top10.log,filename = paste(output_directory, sample_name, "_clusters_log10_", as.character(clusters.ranked[i]) ,".eps", sep=""))
 
   return(cluster.df)
 }
