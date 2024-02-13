@@ -14,16 +14,17 @@ As microbial populations exhibit complex lineage dynamics, interpreting such dat
 
 ## Installation
 
-You can install the development version of doblin from [GitHub](https://github.com/dagagf/doblin) with:
+1. Open Terminal
+2. Change the current working directory to the location where you want to clone the *Doblin* repository.
+3. Type `git clone`, and then paste *Doblin*'s URL.
 
-``` r
-# install.packages("devtools")
-devtools::install_github("dagagf/doblin")
-```
+    `git clone https://github.com/dagagf/doblin`
+
+4. Press **Enter** to create your local clone.
+5. In Terminal, set your working directory to the `doblin/` folder.
 
 ## Usage
-
-**Before running the following command line**, make sure to set your working directory to the `doblin/` folder:
+Commad line:
 `Rscript ./main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] -c [TIME_CUTOFF]`
 
  Here's an example of how to use the command line:
