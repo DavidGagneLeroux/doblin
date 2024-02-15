@@ -33,6 +33,7 @@ filterHC <- function(series_filtered, clusters, n_members){
 
   ## Group by cluster and keep only the clusters with at least n_members members
   series_reshaped_1=series_reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) >= n_members)
+  clusters_filtered = series_reshaped_1
 
   ## To avoid ignoring the dominant barcodes, which might be in smaller clusters, we add a second criteria:
   if(nrow(series_reshaped_1) != nrow(series_reshaped)){
@@ -43,9 +44,9 @@ filterHC <- function(series_filtered, clusters, n_members){
     series_reshaped_2 = series_reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) < n_members) %>% mutate(mean_freq = mean(Frequency)) %>% dplyr::filter(mean_freq >= min_freq_ignored_clusters)
     series_reshaped_2$mean_freq = NULL
 
-    clusters_filtered = rbind(series_reshaped_1, series_reshaped_2)
-
+    clusters_filtered = rbind(clusters_filtered, series_reshaped_2)
+    rm(series_reshaped, series_reshaped_1, series_reshaped_2)
   }
-  rm(series_reshaped, series_reshaped_1, series_reshaped_2)
-  return(list(clusters_filtered, min_freq_ignored_clusters))
+
+  return(clusters_filtered)
 }

@@ -49,16 +49,19 @@ plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, pl
   if (plot_model == "linear" || plot_model == "both"){
     print("WARNING: Linear-scale plots are very heavy. This might take several minutes...")
 
-    grDevices::cairo_ps(paste(output_directory, input_name,"_area.eps", sep=""),width = 8.25,height = 6)
+    #grDevices::cairo_ps(paste(output_directory, input_name,"_area.ps", sep=""),width = 8.25,height = 6)
 
     g = ggplot(colored_df) + geom_area(aes(x=Time,y=Frequency,group=ID,fill=ID),data=colored_df) + scale_fill_manual(values = LONG_COLOR_LIST_RAND, guide="none") +
       ggnewscale::new_scale_fill() + geom_area(aes(x=Time,y=Frequency,group=ID,fill=ID),data=grouped_df) +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) + theme_Publication() +
       scale_fill_manual(values = mycolors,name="Cluster ID", guide="none") +
-      labs(x="Time" , y="Barcode frequency") + coord_cartesian(expand = FALSE)
+      labs(x="Time (generations)" , y="Barcode frequency") + coord_cartesian(expand = FALSE)
 
-    graphics::plot(g)
-    grDevices::dev.off()
+    output_file <- paste(output_directory, input_name, "_area.jpg", sep = "")
+    ggsave(output_file, plot = g, width = 8.25, height = 6, dpi = 300) # Adjust dpi as per your requirements
+
+    #graphics::plot(g)
+    #grDevices::dev.off()
 
   }
 
@@ -72,6 +75,9 @@ plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, pl
       theme_Publication() + scale_y_log10(limits=c(min(colored_df$Frequency)+1e-7,1e0)) + scale_color_manual(values = mycolors,name="Cluster ID") + labs(x ="Time" ,y="Barcode frequency") +
       scale_x_continuous(limits=c(min(x_breaks), max(x_breaks))) +
       guides(color = "none", shape = guide_legend(order = 1))  + coord_cartesian(expand = FALSE)
+
+    #output_file <- paste(output_directory, input_name, "_line.jpg", sep = "")
+    #ggsave(output_file, plot = all.line, width = 8.25, height = 6, dpi = 300) # Adjust dpi as per your requirements
 
     graphics::plot(all.line)
     grDevices::dev.off()

@@ -152,10 +152,10 @@ print("3.2.2 Filtering the hierarchical clustering results...")
 cat(paste("Enter the minimum number of members per cluster for", input_name, ": "))
 min_members <- as.numeric(readLines("stdin", n=1))
 
-list_filtering_results = filterHC(filtered_df, clusters_df, min_members)
+clusters_filtered = filterHC(filtered_df, clusters_df, min_members)
 
-clusters_filtered <- list_filtering_results[[1]]
-min_freq_ignored_clusters <- list_filtering_results[[2]]
+#clusters_filtered <- list_filtering_results[[1]]
+#min_freq_ignored_clusters <- list_filtering_results[[2]]
 
 print("3.2.3 Quantifying the hierarchical clustering...")
 plotHCQuantification(clusters_filtered)

@@ -86,6 +86,7 @@ plot_clusters_and_loess <- function(selected_clusters){
   effective.labels = as.character(effective.breaks)
   effective.limits = c(min(effective.breaks), max(effective.breaks))
 
+
   clusters_dataframe$cluster <- factor(clusters_dataframe$cluster, levels = unique(clusters_dataframe$cluster))
   loess.plot = ggplot(clusters_dataframe) + geom_line(aes(x=time/10,y=10^(value),group=cluster,color=cluster),size=1) + scale_x_continuous(limits = effective.limits) +
     theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("Clone frequency") + xlab("Time") +

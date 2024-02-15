@@ -7,7 +7,7 @@ theme_Publication <- function(base_size=24, base_family="Arial",aspect.ratio = 0
            text = element_text(),
            panel.background = element_rect(colour = NA, fill="#FCFCFC"),
            plot.background = element_rect(colour = NA),
-           panel.border = element_rect(fill = NA, colour = "black", size=1.5),
+           panel.border = element_rect(fill = NA, colour = "black", size=0.5),
            axis.title = element_text(size = rel(1)),
            axis.title.y = element_text(angle=90,vjust =2),
            axis.title.x = element_text(vjust = -0.2),
