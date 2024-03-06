@@ -58,7 +58,7 @@ perform_hierarchical_clustering <- function(filtered_data, linkage_method=c("ave
       proxy::pr_DB$set_entry(FUN=(dtwclust::dtw_basic), names=c("dtw_basic_3"))
     }
 
-    cat("Enter the norm for the LCM calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
+    cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
     dtw_norm <- readLines("stdin", n=1)
     dtw_norm <- match.arg(dtw_norm, c("L1","L2"))
 

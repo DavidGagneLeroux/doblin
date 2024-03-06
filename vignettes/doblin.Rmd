@@ -248,7 +248,7 @@ Therefore, the procedure for hierarchical clustering involves the following step
 
 1. Select a linkage/agglomeration method from those available in `stats::hclust()`.
 2. Choose a similarity metric (Pearson correlation or DTW) for computing the pairwise distance matrix.
-3. If Pearson correlation is selected, specify a method for computing covariances in the presence of missing values, as outlined in the `stats::cor()` documentation.
+3. If Pearson correlation is selected, specify a method for computing covariances in the presence of missing values, as outlined in the `stats::cor()` R documentation.
 
 ```{r eval=FALSE, collapse=TRUE}
 [1] "3.2 Clustering the filtered data..."
@@ -258,6 +258,17 @@ Enter the metric to be used to measure similarity between two time-series (pears
 Enter a method for computing covariances in the presence of missing values. 
 Please refer to stats::cor() R documentation. (ex: pairwise.complete.obs):
   pair
+```
+
+4. If DTW is selected, specify a method for computing the local distance, as outlined in the dtwclust::dtw_basic() R documentation (i.e. L1 or L2).
+
+```{r eval=FALSE, collapse=TRUE}
+[1] "3.2 Clustering the filtered data..."
+Enter a linkage method (ex: average): average
+Enter the metric to be used to measure similarity between two time-series (pearson/dtw):
+  dtw
+Enter the norm for the local distance calculation
+('L1' for Manhattan or 'L2' for (squared) Euclidean): L2
 ```
 
 To determine the optimal clustering threshold in our hierarchical clustering process, we consider three overarching trends:
@@ -302,32 +313,32 @@ Once a specific threshold has been provided, *Doblin* plots every resulting clus
 [1] "DONE"
 ```
 \begin{figure}[ht]
-        \begin{subfigure}{0.5\textwidth}
-          \includegraphics[width=0.9\linewidth]{images/test_cluster1_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}
+          \includegraphics[width=1.3\linewidth]{images/test_cluster1_log10.pdf}
           \caption{Composition of cluster 1}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}                                          
-          \includegraphics[width=0.9\linewidth]{images/test_cluster2_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}                      
+          \includegraphics[width=1.3\linewidth]{images/test_cluster2_log10.pdf}
           \caption{Composition of cluster 2}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}
-          \includegraphics[width=0.9\linewidth]{images/test_cluster3_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}
+          \includegraphics[width=1.3\linewidth]{images/test_cluster3_log10.pdf}
           \caption{Composition of cluster 3}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}     
-          \includegraphics[width=0.9\linewidth]{images/test_cluster4_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}     
+          \includegraphics[width=1.3\linewidth]{images/test_cluster4_log10.pdf}
           \caption{Composition of cluster 4}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}
-          \includegraphics[width=0.9\linewidth]{images/test_cluster5_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}
+          \includegraphics[width=1.3\linewidth]{images/test_cluster5_log10.pdf}
           \caption{Composition of cluster 5}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}     
-          \includegraphics[width=0.9\linewidth]{images/test_cluster6_log10.pdf}
+        \begin{subfigure}{0.25\textwidth}     
+          \includegraphics[width=1.3\linewidth]{images/test_cluster6_log10.pdf}
           \caption{Composition of cluster 6}
         \end{subfigure}
-        \begin{subfigure}{0.5\textwidth}     
-          \includegraphics[width=0.9\linewidth]{images/test_loess_clusters_log10.pdf}
+        \begin{subfigure}{\textwidth}     
+          \includegraphics[width=1.0\linewidth]{images/test_loess_clusters_log10.pdf}
           \caption{Clonal dynamics}
         \end{subfigure}
         \caption{Hierarchical clustering results}

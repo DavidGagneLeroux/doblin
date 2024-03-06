@@ -57,6 +57,12 @@ if (length(arguments)== 6) {
 }
 
 ## Step 0:
+# Open a text file for writing
+sink(paste(output_directory,"cmd_line.txt"), append = TRUE)
+cat("Command line inputs:\n")
+cat(commandArgs(trailingOnly = TRUE))
+sink()
+
 print("Step 0: Processing CSV file...")
 input_dataframe <- readr::read_csv(input_file, show_col_types = FALSE)
 
@@ -77,7 +83,7 @@ if (plot_choice == "yes"){
   top_N_maxFreq <- fetchTop(reshaped_dataframe, N_LINEAGES)
 
   ## Step 1.3:
-  print("1.3 Assigning colors to lineages having reached the minimum frequency threshold among the 1000 most dominant barcoded lines...")
+  print(paste("1.3 Assigning colors to lineages having reached the minimum frequency threshold among the",N_LINEAGES,"most dominant barcoded lines..."))
 
   ## All barcodes with (maximum frequency >= minimum frequency threshold) are assigned a hex color
   colored_top_freq <- top_N_maxFreq[top_N_maxFreq$max >= min_freq_threshold, ]
@@ -167,3 +173,5 @@ selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_thres
 
 print("3.2.5 Plotting the resulting clusters...")
 plot_clusters_and_loess(selected_clusters)
+
+

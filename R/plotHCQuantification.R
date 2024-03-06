@@ -56,7 +56,22 @@ plotHCQuantification <- function(clusters_filtered){
     theme_Publication() + geom_line(aes(as.numeric(as.character(cutoff)), as.integer(as.character(cluster))*scale), size = 2, color = "#56B4E9") +
     scale_y_continuous(sec.axis = sec_axis(~./scale,name="Number of clusters")) + scale_x_reverse() +xlab("Threshold") + ylab("Distance between clusters")
 
-  ggsave(choose_threshold,filename =  paste(output_directory,input_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
+  tryCatch(
+    {
+      ggsave(choose_threshold,filename =  paste(output_directory,input_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
+    },
+    error = function(e) {
+      if(grepl("Transformation for secondary axes must be monotonic", e$message)) {
+        custom_error_message <- "Error: You are not keeping enough lineages to properly perform a hierarchical clustering. The '-c' argument might be too strict."
+        stop(custom_error_message)
+      } else {
+        # If it's not the specific error you're expecting, re-raise the error
+        stop(e)
+      }
+    }
+  )
+
+
 }
 
 #################
