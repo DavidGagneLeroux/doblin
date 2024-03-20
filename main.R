@@ -36,7 +36,7 @@ options <- list(
   make_option(c("-o", "--outputPath"), action = "store", type="character", default=getwd(), help="Output directory [default %default]"),
   make_option(c("-n", "--inputName"), action = "store", type="character", help="Input name"),
   make_option(c("-i", "--inputFile"), action = "store", type="character", help="Input csv file"),
-  make_option(c("-c", "--timeCut"), action = "store", type="integer", help="Time point threshold (keep barcodes with at least '-c' non-zero time points)")
+  make_option(c("-c", "--timeCut"), action = "store", type="integer", help="Minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering")
 )
 arguments <- parse_args(OptionParser(option_list = options))
 
@@ -78,7 +78,7 @@ if (plot_choice == "yes"){
   reshaped_dataframe <- reshapeData(input_dataframe)
 
   ## Step 1.2:
-  N_LINEAGES = 1000
+  N_LINEAGES = 50
   print(paste("1.2 Retrieving the first",N_LINEAGES,"barcodes with the highest maximum frequencies..."))
   top_N_maxFreq <- fetchTop(reshaped_dataframe, N_LINEAGES)
 

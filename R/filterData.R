@@ -28,8 +28,16 @@ filterData <- function(input_df, freq_threshold, time_threshold){
 
   readr::write_csv(mat,file=paste(output_directory, input_name,"_unfiltered.csv",sep=""),col_names = TRUE) # Contains ALL the lineages from the input file
 
-  sample.clustering = mat[mat$points>time_threshold & mat$mean>freq_threshold,]
+  sample.clustering = mat[mat$points>=time_threshold & mat$mean>=freq_threshold,]
 
-  readr::write_csv(sample.clustering,file=paste(output_directory, input_name,"_filtered.csv",sep=""),col_names = TRUE) # Contains ONLY the "dominant" and "persistent" lineages
+  # Check if sample.clustering is empty
+  if (nrow(sample.clustering) == 0) {
+    stop("Error: With the given time & frequency thresholds, there is no eligible
+         data for clustering. Please consider adjusting your thresholds.")
+  } else {
+    # Write sample.clustering to CSV file
+    readr::write_csv(sample.clustering, file = paste(output_directory, input_name, "_filtered.csv", sep = ""), col_names = TRUE) # Contains ONLY the "dominant" and "persistent" lineages
+  }
+
   return(sample.clustering)
 }

@@ -140,7 +140,7 @@ Where
 \item[-o:] Output directory [default: current working directory].
 \item[-n:] Input file name.
 \item[-i:] Input file.
-\item[-c:] Time point threshold. We cluster the lineages that persist for at least '-c' time points.
+\item[-c:] Minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering. If a lineage exists for fewer time points than the specified threshold "-c", it won't be included in the clustering analysis.
 \end{description}
 ```
 

@@ -119,11 +119,11 @@ applyLOESS <- function(clusters_filtered){
   ## Get moving average of barcode frequencies for each cluster USING LOESS
   xx <- seq(from=min(clusters_filtered$Time), to=max(clusters_filtered$Time),length.out = loess.range)
 
-  cluster_df=clusters_filtered %>%  dplyr::group_by(cluster,cutoff) %>%
-    dplyr::summarise(model=predict(adjust_span(Time, Frequency, span = 0.2),xx,se = FALSE))  %>%
-    dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
+  grouped_df=clusters_filtered %>%  dplyr::group_by(cluster,cutoff)
+  spanned_grouped_df = grouped_df %>% dplyr::summarise(model=predict(adjust_span(Time, Frequency, span = 0.2),xx,se = FALSE))
+  grouped_span_df = spanned_grouped_df %>% dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
 
-  return(cluster_df)
+  return(grouped_span_df)
 }
 
 
