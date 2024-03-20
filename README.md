@@ -38,7 +38,7 @@ This argument is used when plotting the dynamics.
 -o: Output directory [default: current working directory].
 -n: Input file name.
 -i: Input file.
--c: Time point threshold. We cluster lineages that persist for at least '-c' time points.
+-c: Minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering.
 ```
 
 
