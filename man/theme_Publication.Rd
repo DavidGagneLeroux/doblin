@@ -4,7 +4,7 @@
 \alias{theme_Publication}
 \title{configuration functions}
 \usage{
-theme_Publication(base_size = 6, base_family = "Helvica", aspect.ratio = 0.75)
+theme_Publication(base_size = 24, base_family = "Arial", aspect.ratio = 0.75)
 }
 \description{
 configuration functions
