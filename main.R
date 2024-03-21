@@ -23,7 +23,6 @@ list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnew
                       "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "doblin")
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-
 if(length(new.packages)){
   install.packages(new.packages)
 }
