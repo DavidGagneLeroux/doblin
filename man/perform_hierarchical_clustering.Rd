@@ -6,16 +6,15 @@
 \usage{
 perform_hierarchical_clustering(
   filtered_data,
-  linkage_method = c("average", "ward.D", "ward.D2", "centroid", "single", "complete",
-    "median", "mcquitty"),
-  similarity_metric = c("pearson", "dtw"),
+  agglomeration_method,
+  similarity_metric,
   missing_values = NULL
 )
 }
 \arguments{
 \item{filtered_data}{a dataframe filtered by filterData()}
 
-\item{linkage_method}{a character string indicating which method is to be used for linkage}
+\item{agglomeration_method}{a character string indicating which method is to be used for agglomeration}
 
 \item{similarity_metric}{a character string indicating which metric to be used to measure similarity between two time-series}
 
@@ -28,7 +27,7 @@ for one or multiple thresholds
 \description{
 This function uses the data filtered by filterData() to compute a distance matrix
 according to pearson's or dtw's approach. From the resulting matrix, we proceed
-to a hierarchical clustering of the data according to a given linkage method.
+to a hierarchical clustering of the data according to a given agglomeration method.
 Then, in order to visualize the results,we plot a dendrogram and a heatmap.
 Finally, if no threshold is provided, we compute the relative clusters for ALL
 thresholds between 0.1 and maximum height of hierarchical clustering tree. This step allows the

@@ -2,7 +2,7 @@
 #'
 #' This function uses the data filtered by filterData() to compute a distance matrix
 #' according to pearson's or dtw's approach. From the resulting matrix, we proceed
-#' to a hierarchical clustering of the data according to a given linkage method.
+#' to a hierarchical clustering of the data according to a given agglomeration method.
 #' Then, in order to visualize the results,we plot a dendrogram and a heatmap.
 #' Finally, if no threshold is provided, we compute the relative clusters for ALL
 #' thresholds between 0.1 and maximum height of hierarchical clustering tree. This step allows the
@@ -10,7 +10,7 @@
 #' threshold to use.
 #'
 #' @param filtered_data a dataframe filtered by filterData()
-#' @param linkage_method a character string indicating which method is to be used for linkage
+#' @param agglomeration_method a character string indicating which method is to be used for agglomeration
 #' @param similarity_metric a character string indicating which metric to be used to measure similarity between two time-series
 #' @param missing_values a character string indicating which method is to be used to manage missing values while computing covariances
 #' @return A dataframe containing the resulting clusters of a hierarchical clustering
@@ -18,10 +18,7 @@
 #' @export perform_hierarchical_clustering
 
 
-perform_hierarchical_clustering <- function(filtered_data, linkage_method=c("average", "ward.D","ward.D2", "centroid", "single", "complete", "median", "mcquitty"), similarity_metric=c("pearson","dtw"), missing_values = NULL){
-
-  linkage_method <- match.arg(linkage_method)
-  similarity_metric <- match.arg(similarity_metric)
+perform_hierarchical_clustering <- function(filtered_data, agglomeration_method, similarity_metric, missing_values = NULL){
 
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
@@ -37,7 +34,7 @@ perform_hierarchical_clustering <- function(filtered_data, linkage_method=c("ave
     distmat=(as.matrix(1 - stats::cor(t(mat), use = missing_values, method = similarity_metric)))
 
     tryCatch({
-      clust <- stats::hclust(stats::as.dist(distmat), method = linkage_method)
+      clust <- stats::hclust(stats::as.dist(distmat), method = agglomeration_method)
     }, error = function(e) {
       if (grepl("NA/NaN/Inf", e$message)) {
         stop("Error in hierarchical clustering: NA/NaN/Inf values found in the distance matrix.\n",
@@ -58,14 +55,18 @@ perform_hierarchical_clustering <- function(filtered_data, linkage_method=c("ave
       proxy::pr_DB$set_entry(FUN=(dtwclust::dtw_basic), names=c("dtw_basic_3"))
     }
 
-    cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
-    dtw_norm <- readLines("stdin", n=1)
+    if (interactive()) {
+      dtw_norm <- readline(prompt = "Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
+    } else {
+      cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
+      dtw_norm <- readLines("stdin", n=1)
+    }
     dtw_norm <- match.arg(dtw_norm, c("L1","L2"))
 
     distmat = proxy::dist(t(mat), method = "dtw_basic", normalize = TRUE, norm=dtw_norm)
-    clust <- stats::hclust(stats::as.dist(distmat),method=linkage_method )
+    clust <- stats::hclust(stats::as.dist(distmat),method=agglomeration_method )
     tryCatch({
-      clust <- stats::hclust(stats::as.dist(distmat), method = linkage_method)
+      clust <- stats::hclust(stats::as.dist(distmat), method = agglomeration_method)
     }, error = function(e) {
       if (grepl("NA/NaN/Inf", e$message)) {
         stop("Error in hierarchical clustering: NA/NaN/Inf values found in the distance matrix.\n",
@@ -80,6 +81,8 @@ perform_hierarchical_clustering <- function(filtered_data, linkage_method=c("ave
   as.dendrogram(clust) -> dend
 
   grDevices::postscript(paste(output_directory, input_name,"_", similarity_metric, ".eps",sep=""),width = 5.5,height = 5)
+  #output_filename <- paste(output_directory, input_name, "_", similarity_metric, ".png", sep = "")
+  #png(output_filename, width = 5.5, height = 5)
   par(mar = c(2,2,2,2))
 
   ## Plot heatmap:

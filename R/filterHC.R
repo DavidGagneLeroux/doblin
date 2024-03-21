@@ -38,8 +38,14 @@ filterHC <- function(series_filtered, clusters, n_members){
   ## To avoid ignoring the dominant barcodes, which might be in smaller clusters, we add a second criteria:
   if(nrow(series_reshaped_1) != nrow(series_reshaped)){
 
-    cat(paste("By ignoring clusters with fewer than",n_members," members, you are potentially ignoring dominant clusters. Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: "))
-    min_freq_ignored_clusters <- as.numeric(readLines("stdin", n=1))
+    cat(paste("By ignoring clusters with fewer than",n_members," members, you are potentially ignoring dominant clusters."))
+
+    if (interactive()) {
+      min_freq_ignored_clusters <- as.numeric(readline(prompt = "Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: "))
+    } else {
+      cat("Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: ")
+      min_freq_ignored_clusters <- as.numeric(readLines("stdin", n=1))
+    }
 
     series_reshaped_2 = series_reshaped %>%  dplyr::group_by(cluster,cutoff) %>% dplyr::filter(length(unique(ID)) < n_members) %>% mutate(mean_freq = mean(Frequency)) %>% dplyr::filter(mean_freq >= min_freq_ignored_clusters)
     series_reshaped_2$mean_freq = NULL
