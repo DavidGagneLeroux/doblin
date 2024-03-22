@@ -14,13 +14,28 @@
 ## Time: integer representing the time at which the data was measured.
 ## Reads: number of barcodes counted at a given time for a given consensus sequence.
 
+options(repos = c(CRAN = "https://cran.rstudio.com/")) # CRAN mirror
+
 ## Install missing packages
 list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnewscale",
-                      "readr", "data.table", "reshape2", "grDevices", "doblin",
+                      "readr", "data.table", "reshape2", "grDevices", "devtools",
                       "optparse", "egg", "ggpubr", "stats", "imputeTS", "data.table", "dtwclust",
-                      "purrr", "tidyr", "TSdist")
+                      "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "doblin")
+
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
+
+if(length(new.packages)){
+  install.packages(new.packages)
+}
+
+if (!"doblin" %in% installed.packages()[, "Package"]) {
+  devtools::install_github("dagagf/doblin")
+}
+
+# Check if it matches your repository name
+if (basename(getwd()) != "doblin") {
+  stop("Make sure to be in the 'doblin' repository.")
+}
 
 library(doblin)
 library(optparse)
@@ -183,7 +198,7 @@ if (interactive()) {
   agglomeration <- readline(prompt="Enter an agglomeration method. Please refer to stats::hclust() R documentation (ex: average) : ")
   similarity_metric <- readline(prompt="Enter the metric to be used to measure similarity between two time-series (pearson/dtw) : ")
 } else {
-  cat("Enter an agglomeration method (refer to stats::hclust R documentation): ")
+  cat("Enter an agglomeration method (refer to stats::hclust() R documentation): ")
   agglomeration <- readLines("stdin", n=1)
   cat("Enter the metric to be used to measure similarity between two time-series (pearson/dtw) : ")
   similarity_metric <- readLines("stdin", n=1)
