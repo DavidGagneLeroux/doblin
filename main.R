@@ -23,6 +23,7 @@ list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnew
                       "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "doblin")
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+
 if(length(new.packages)){
   install.packages(new.packages)
 }
@@ -249,4 +250,3 @@ selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_thres
 
 print("3.2.5 Plotting the resulting clusters...")
 plot_clusters_and_loess(selected_clusters)
-
