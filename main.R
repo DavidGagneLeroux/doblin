@@ -250,5 +250,3 @@ selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_thres
 
 print("3.2.5 Plotting the resulting clusters...")
 plot_clusters_and_loess(selected_clusters)
-
-
