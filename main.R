@@ -258,7 +258,7 @@ if (similarity_metric == "pearson") {
 
   if (interactive()) {
     missing_values <- readline(prompt = "Enter a method for computing covariances in the presence of missing values. Please refer to stats::cor() R documentation (ex: pairwise.complete.obs) : ")
-  } else {
+  } else if (pipeline_choice == "yes") {
     cat("Enter a method for computing covariances in the presence of missing values. Please refer to stats::cor() R documentation (ex: pairwise.complete.obs) : ")
     missing_values <- readLines("stdin", n=1)
   }
