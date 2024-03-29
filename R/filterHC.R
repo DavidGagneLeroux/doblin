@@ -42,7 +42,7 @@ filterHC <- function(series_filtered, clusters, n_members){
 
     if (interactive()) {
       min_freq_ignored_clusters <- as.numeric(readline(prompt = "Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: "))
-    } else {
+    } else if (pipeline_choice == "yes") {
       cat("Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: ")
       min_freq_ignored_clusters <- as.numeric(readLines("stdin", n=1))
     }

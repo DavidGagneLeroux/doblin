@@ -106,7 +106,7 @@ applyLOESS <- function(clusters_filtered){
     dplyr::group_by(cluster,cutoff) %>%
     dplyr::summarise(average = mean(Frequency)) %>% dplyr::ungroup() %>%
     dplyr::group_by(cutoff) %>%
-    dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(row_number()))
+    dplyr::arrange(desc(average), .by_group = TRUE)  %>% dplyr::mutate(cluster2=as.factor(dplyr::row_number()))
 
   series_order$cluster2=as.integer(as.character(series_order$cluster2))
   clusters_filtered=merge(clusters_filtered,series_order,by=c("cluster","cutoff"))
