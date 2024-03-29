@@ -14,6 +14,11 @@
 ## Time: integer representing the time at which the data was measured.
 ## Reads: number of barcodes counted at a given time for a given consensus sequence.
 
+########### RUNTIME & MEMORY USAGE EVALUATION
+
+
+#############################################
+
 options(repos = c(CRAN = "https://cran.rstudio.com/")) # CRAN mirror
 
 ## Install missing packages
@@ -100,10 +105,46 @@ if (interactive()){
 print("Step 0: Processing CSV file...")
 input_dataframe <- readr::read_csv(input_file, show_col_types = FALSE)
 
+## Non-interactive mode:
+if (!interactive()){
+  cat("Do you want to run this pipeline in an interactive way?(y/n): ")
+  pipeline_choice <- readLines("stdin", n=1)
+  pipeline_choice <- match.arg(tolower(pipeline_choice), c("yes", "no"))
+
+  if (pipeline_choice == "no"){
+    cat("Please provide the additional input file containing all the required arguments (Refer to user guide for format): ")
+    additional_file <- readLines("stdin", n=1)
+    additional_arguments <- readr::read_csv(additional_file, show_col_types = FALSE)
+    # plot_choice: "yes", "no"
+    plot_choice <- additional_arguments$plot_choice
+    # plot_model: if yes "logarithmic", "linear", "both". else ""
+    plot_model <- additional_arguments$plot_model
+    # diversity_choice: "yes", "no"
+    diversity_choice <- additional_arguments$diversity_choice
+    # freq_filter_threshold: numeric
+    freq_filter_threshold <- additional_arguments$freq_filter_threshold
+    # agglomeration: "average", "ward.D","ward.D2", "centroid", "single", "complete", "median", "mcquitty"
+    agglomeration <- additional_arguments$agglomeration
+    # similarity_metric: "pearson", "dtw"
+    similarity_metric <- additional_arguments$similarity_metric
+    # missing_values: if pearson "everything","all.obs","complete.obs","na.or.complete","pairwise.complete.obs", if dtw ""
+    missing_values <- additional_arguments$missing_values
+    # dtw_norm: if dtw "L1", "L2", if pearson ""
+    dtw_norm <- additional_arguments$dtw_norm
+    # min_members: numeric
+    min_members <- additional_arguments$min_members
+    # min_freq_ignored_clusters: numeric
+    min_freq_ignored_clusters <- additional_arguments$min_freq_ignored_clusters
+    # selected_threshold: numeric
+    selected_threshold <- additional_arguments$selected_threshold
+  }
+}
+
+
 ## Step 1:
 if (interactive()) {
   plot_choice <- readline(prompt = "Do you want to plot the dynamics of your dataset?(y/n): ")
-} else {
+} else if (pipeline_choice == "yes") {
   cat("Do you want to plot the dynamics of your dataset?(y/n): ")
   plot_choice <- readLines("stdin", n=1)
 }
@@ -144,7 +185,7 @@ if (plot_choice == "yes"){
   ## Step 1.4:
   if (interactive()) {
     plot_model <- readline(prompt = "Do you want to plot a log-scale model, a linear-scale model or both? (logarithmic/linear/both): ")
-  } else {
+  } else if (pipeline_choice == "yes") {
     cat("Do you want to plot a log-scale model, a linear-scale model or both? (logarithmic/linear/both): ")
     plot_model <- readLines("stdin", n=1)
   }
@@ -159,7 +200,7 @@ if (plot_choice == "yes"){
 ## Step 2:
 if (interactive()) {
   diversity_choice <- readline(prompt = "Do you want to plot the diversity of your dataset?(y/n): ")
-} else {
+} else if (pipeline_choice == "yes") {
   cat("Do you want to plot the diversity of your dataset?(y/n): ")
   diversity_choice <- readLines("stdin", n=1)
 }
@@ -182,13 +223,20 @@ print("Step 3: Clustering...")
 if (interactive()) {
   freq_filter_threshold <- as.numeric(readline(prompt = "Specify a minimum mean frequency below which lineages are not taken into account during clustering (ex: 0.00005): "))
   time_threshold <- as.numeric(readline(prompt="Specify the minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering: "))
-} else {
+} else if (pipeline_choice == "yes") {
   cat("Specify a minimum mean frequency below which lineages are not taken into account during clustering (ex: 0.00005): ")
   freq_filter_threshold <- as.numeric(readLines("stdin", n=1))
 }
 
 print("3.1 Filtering the input data...")
+library(pryr)
+start_time <- Sys.time()
 filtered_df <- filterData(input_dataframe, freq_filter_threshold, time_threshold)
+end_time <- Sys.time()
+memory_usage <- mem_change(filterData(input_dataframe, freq_filter_threshold, time_threshold))
+runtime <- end_time - start_time
+step3_1 <- list(runtime = runtime, memory_used = memory_usage)
+print(step3_1)
 
 ## 3.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
@@ -197,7 +245,7 @@ print("3.2 Clustering the filtered data...")
 if (interactive()) {
   agglomeration <- readline(prompt="Enter an agglomeration method. Please refer to stats::hclust() R documentation (ex: average) : ")
   similarity_metric <- readline(prompt="Enter the metric to be used to measure similarity between two time-series (pearson/dtw) : ")
-} else {
+} else if (pipeline_choice == "yes") {
   cat("Enter an agglomeration method (refer to stats::hclust() R documentation): ")
   agglomeration <- readLines("stdin", n=1)
   cat("Enter the metric to be used to measure similarity between two time-series (pearson/dtw) : ")
@@ -229,7 +277,7 @@ print("3.2.2 Filtering the hierarchical clustering results...")
 
 if (interactive()) {
   min_members <- as.numeric(readline(prompt = paste("Enter the minimum number of members per cluster for", input_name, ": ")))
-} else {
+} else if (pipeline_choice == "yes") {
   cat(paste("Enter the minimum number of members per cluster for", input_name, ": "))
   min_members <- as.numeric(readLines("stdin", n=1))
 }
@@ -241,7 +289,7 @@ plotHCQuantification(clusters_filtered)
 
 if (interactive()) {
   selected_threshold <- as.numeric(readline(prompt = paste("3.2.4 Enter the chosen threshold for the clustering of", input_name, ": ")))
-} else {
+} else if (pipeline_choice == "yes") {
   cat(paste("3.2.4 Enter the chosen threshold for the clustering of", input_name, ": "))
   selected_threshold <- as.numeric(readLines("stdin", n=1))
 }

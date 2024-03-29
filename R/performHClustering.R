@@ -57,7 +57,7 @@ perform_hierarchical_clustering <- function(filtered_data, agglomeration_method,
 
     if (interactive()) {
       dtw_norm <- readline(prompt = "Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
-    } else {
+    } else if (pipeline_choice == "yes") {
       cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
       dtw_norm <- readLines("stdin", n=1)
     }
