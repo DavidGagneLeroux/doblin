@@ -5,7 +5,7 @@
 #'
 #' @param reshaped_df a dataframe returned by reshapeData()
 #' @param N_LINEAGES integer representing the number of barcodes to fetch
-#' @return top 1000 barcodes according to their maximum frequencies.
+#' @return top N barcodes according to their maximum frequencies.
 #' @export fetchTop
 
 fetchTop <- function(reshaped_df, N_LINEAGES) {

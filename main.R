@@ -14,10 +14,6 @@
 ## Time: integer representing the time at which the data was measured.
 ## Reads: number of barcodes counted at a given time for a given consensus sequence.
 
-########### RUNTIME & MEMORY USAGE EVALUATION
-
-
-#############################################
 
 options(repos = c(CRAN = "https://cran.rstudio.com/")) # CRAN mirror
 
@@ -25,7 +21,7 @@ options(repos = c(CRAN = "https://cran.rstudio.com/")) # CRAN mirror
 list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnewscale",
                       "readr", "data.table", "reshape2", "grDevices", "devtools",
                       "optparse", "egg", "ggpubr", "stats", "imputeTS", "data.table", "dtwclust",
-                      "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "doblin")
+                      "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "pryr", "doblin")
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 
@@ -44,6 +40,7 @@ if (basename(getwd()) != "doblin") {
 
 library(doblin)
 library(optparse)
+library(pryr)
 
 if (interactive()){
   library(ggplot2)
@@ -109,6 +106,7 @@ input_dataframe <- readr::read_csv(input_file, show_col_types = FALSE)
 if (!interactive()){
   cat("Do you want to run this pipeline in an interactive way?(y/n): ")
   pipeline_choice <- readLines("stdin", n=1)
+  print(pipeline_choice)
   pipeline_choice <- match.arg(tolower(pipeline_choice), c("yes", "no"))
 
   if (pipeline_choice == "no"){
@@ -229,14 +227,13 @@ if (interactive()) {
 }
 
 print("3.1 Filtering the input data...")
-library(pryr)
+
 start_time <- Sys.time()
 filtered_df <- filterData(input_dataframe, freq_filter_threshold, time_threshold)
 end_time <- Sys.time()
 memory_usage <- mem_change(filterData(input_dataframe, freq_filter_threshold, time_threshold))
 runtime <- end_time - start_time
 step3_1 <- list(runtime = runtime, memory_used = memory_usage)
-print(step3_1)
 
 ## 3.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
@@ -271,7 +268,13 @@ if (similarity_metric == "pearson") {
 
 print("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
 
+start_time <- Sys.time()
 clusters_df = perform_hierarchical_clustering(filtered_df, agglomeration, similarity_metric, missing_values)
+end_time <- Sys.time()
+memory_usage <- mem_change(perform_hierarchical_clustering(filtered_df, agglomeration, similarity_metric, missing_values))
+runtime <- end_time - start_time
+step3_2_1 <- list(runtime = runtime, memory_used = memory_usage)
+
 
 print("3.2.2 Filtering the hierarchical clustering results...")
 
@@ -282,10 +285,24 @@ if (interactive()) {
   min_members <- as.numeric(readLines("stdin", n=1))
 }
 
+
+start_time <- Sys.time()
 clusters_filtered = filterHC(filtered_df, clusters_df, min_members)
+end_time <- Sys.time()
+memory_usage <- mem_change(filterHC(filtered_df, clusters_df, min_members))
+runtime <- end_time - start_time
+step3_2_2 <- list(runtime = runtime, memory_used = memory_usage)
+
 
 print("3.2.3 Quantifying the hierarchical clustering...")
+
+start_time <- Sys.time()
 plotHCQuantification(clusters_filtered)
+end_time <- Sys.time()
+memory_usage <- mem_change(plotHCQuantification(clusters_filtered))
+runtime <- end_time - start_time
+step3_2_3 <- list(runtime = runtime, memory_used = memory_usage)
+
 
 if (interactive()) {
   selected_threshold <- as.numeric(readline(prompt = paste("3.2.4 Enter the chosen threshold for the clustering of", input_name, ": ")))
@@ -297,4 +314,31 @@ if (interactive()) {
 selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_threshold, ]
 
 print("3.2.5 Plotting the resulting clusters...")
+
+start_time <- Sys.time()
 plot_clusters_and_loess(selected_clusters)
+end_time <- Sys.time()
+memory_usage <- mem_change(plot_clusters_and_loess(selected_clusters))
+runtime <- end_time - start_time
+step3_2_5 <- list(runtime = runtime, memory_used = memory_usage)
+
+# Open a file connection to write runtime and memory usage information
+output_file <- file.path(output_directory, "runtime_memory_usage.txt")
+sink(output_file, append = TRUE)
+
+# Print the runtime and memory usage information
+cat("Step 3.1 - Filtering the input data:\n")
+print(step3_1)
+cat("\nStep 3.2.1 - Computing the relative clusters for ALL thresholds:\n")
+print(step3_2_1)
+cat("\nStep 3.2.2 - Filtering the hierarchical clustering results:\n")
+print(step3_2_2)
+cat("\nStep 3.2.3 - Quantifying the hierarchical clustering:\n")
+print(step3_2_3)
+cat("\nStep 3.2.5 - Plotting the resulting clusters:\n")
+print(step3_2_5)
+
+# Close the file connection
+sink()
+
+
