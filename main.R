@@ -106,7 +106,6 @@ input_dataframe <- readr::read_csv(input_file, show_col_types = FALSE)
 if (!interactive()){
   cat("Do you want to run this pipeline in an interactive way?(y/n): ")
   pipeline_choice <- readLines("stdin", n=1)
-  print(pipeline_choice)
   pipeline_choice <- match.arg(tolower(pipeline_choice), c("yes", "no"))
 
   if (pipeline_choice == "no"){
