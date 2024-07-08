@@ -12,7 +12,7 @@ fetchTop(reshaped_df, N_LINEAGES)
 \item{N_LINEAGES}{integer representing the number of barcodes to fetch}
 }
 \value{
-top 1000 barcodes according to their maximum frequencies.
+top N barcodes according to their maximum frequencies.
 }
 \description{
 This function allows you to retrieve the top N_LINEAGES barcodes.
