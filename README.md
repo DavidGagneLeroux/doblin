@@ -2,7 +2,7 @@
 
 ## Developed by the <http://www.serohijoslab.org/>
 
-## [Download the Doblin user guide](https://github.com/dagagf/doblin/blob/master/vignettes/doblin.pdf) for a complete step-by-step on how to use our tool.
+## Follow the Readme or [Download the Doblin user guide](https://github.com/dagagf/doblin/blob/master/vignettes/doblin.pdf) for a complete step-by-step on how to use our tool.
 
 ## Overview
 
@@ -33,18 +33,10 @@ The primary purpose of *Doblin* is to furnish an open-source toolkit for the pre
 
 ### Command Line Usage
 
-To execute the main script, use the following command:
+To execute the main script, use the following command line:
 ```
   ~$ Rscript ./main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] -c [TIME_CUTOFF]
 ```
-### Example
-
-Here is an example of how to use the command line with `demo_input.csv` provided in the `doblin/demo/` folder:
-```
-  ~$ Rscript ./main.R -t 0.0005 -o ~/Documents/ -n test -i ~/Documents/test.csv -c 12`
-```
-`demo_input.csv` contains data from a forward evolutionary simulation of a bacterial population under Wright-Fisher's model. Barcode lineages 
-
 ### Explanation of Arguments
 ```
 -t: Minimum frequency above which barcodes are assigned colors [default: 0.0005].
@@ -55,6 +47,20 @@ This argument is used when plotting the dynamics.
 -i: Input file.
 -c: Minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering.
 ```
+### Example
+
+Here is an example of how to use the command line with `demo_input.csv` provided in the `doblin/demo/` folder:
+```
+  ~$ Rscript ./main.R -t 0.0005 -o ~/Documents/doblin/ -n test -i ~/Documents/doblin/demo/demo_input.csv -c 12`
+```
+`demo_input.csv` contains data from a forward evolutionary simulation of a bacterial population under Wright-Fisher's model. The format of the input file is a csv file containing the barcode extraction results over **3 columns** (ID, Time, Reads), where 
+
+**ID**: Consensus sequence that identifies a group of barcodes.
+
+**Time**: Integer representing the time at which the data was measured.
+
+**Reads**: Number of barcodes counted at a given time for a given consensus sequence.
+
 
 ### Visualizing the Dynamics of the Dataset
 
