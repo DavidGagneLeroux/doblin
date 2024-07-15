@@ -227,12 +227,12 @@ if (interactive()) {
 
 print("3.1 Filtering the input data...")
 
-start_time <- Sys.time()
+#start_time <- Sys.time()
 filtered_df <- filterData(input_dataframe, freq_filter_threshold, time_threshold)
-end_time <- Sys.time()
-memory_usage <- mem_change(filterData(input_dataframe, freq_filter_threshold, time_threshold))
-runtime <- end_time - start_time
-step3_1 <- list(runtime = runtime, memory_used = memory_usage)
+#end_time <- Sys.time()
+#memory_usage <- mem_change(filterData(input_dataframe, freq_filter_threshold, time_threshold))
+#runtime <- end_time - start_time
+#step3_1 <- list(runtime = runtime, memory_used = memory_usage)
 
 ## 3.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
@@ -267,12 +267,12 @@ if (similarity_metric == "pearson") {
 
 print("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
 
-start_time <- Sys.time()
+#start_time <- Sys.time()
 clusters_df = perform_hierarchical_clustering(filtered_df, agglomeration, similarity_metric, missing_values)
-end_time <- Sys.time()
-memory_usage <- mem_change(perform_hierarchical_clustering(filtered_df, agglomeration, similarity_metric, missing_values))
-runtime <- end_time - start_time
-step3_2_1 <- list(runtime = runtime, memory_used = memory_usage)
+#end_time <- Sys.time()
+#memory_usage <- mem_change(perform_hierarchical_clustering(filtered_df, agglomeration, similarity_metric, missing_values))
+#runtime <- end_time - start_time
+#step3_2_1 <- list(runtime = runtime, memory_used = memory_usage)
 
 
 print("3.2.2 Filtering the hierarchical clustering results...")
@@ -285,22 +285,22 @@ if (interactive()) {
 }
 
 
-start_time <- Sys.time()
+#start_time <- Sys.time()
 clusters_filtered = filterHC(filtered_df, clusters_df, min_members)
-end_time <- Sys.time()
-memory_usage <- mem_change(filterHC(filtered_df, clusters_df, min_members))
-runtime <- end_time - start_time
-step3_2_2 <- list(runtime = runtime, memory_used = memory_usage)
+#end_time <- Sys.time()
+#memory_usage <- mem_change(filterHC(filtered_df, clusters_df, min_members))
+#runtime <- end_time - start_time
+#step3_2_2 <- list(runtime = runtime, memory_used = memory_usage)
 
 
 print("3.2.3 Quantifying the hierarchical clustering...")
 
-start_time <- Sys.time()
+#start_time <- Sys.time()
 plotHCQuantification(clusters_filtered)
-end_time <- Sys.time()
-memory_usage <- mem_change(plotHCQuantification(clusters_filtered))
-runtime <- end_time - start_time
-step3_2_3 <- list(runtime = runtime, memory_used = memory_usage)
+#end_time <- Sys.time()
+#memory_usage <- mem_change(plotHCQuantification(clusters_filtered))
+#runtime <- end_time - start_time
+#step3_2_3 <- list(runtime = runtime, memory_used = memory_usage)
 
 
 if (interactive()) {
@@ -314,30 +314,30 @@ selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_thres
 
 print("3.2.5 Plotting the resulting clusters...")
 
-start_time <- Sys.time()
+#start_time <- Sys.time()
 plot_clusters_and_loess(selected_clusters)
-end_time <- Sys.time()
-memory_usage <- mem_change(plot_clusters_and_loess(selected_clusters))
-runtime <- end_time - start_time
-step3_2_5 <- list(runtime = runtime, memory_used = memory_usage)
+#end_time <- Sys.time()
+#memory_usage <- mem_change(plot_clusters_and_loess(selected_clusters))
+#runtime <- end_time - start_time
+#step3_2_5 <- list(runtime = runtime, memory_used = memory_usage)
 
 # Open a file connection to write runtime and memory usage information
-output_file <- file.path(output_directory, "runtime_memory_usage.txt")
-sink(output_file, append = TRUE)
+#output_file <- file.path(output_directory, "runtime_memory_usage.txt")
+#sink(output_file, append = TRUE)
 
 # Print the runtime and memory usage information
-cat("Step 3.1 - Filtering the input data:\n")
-print(step3_1)
-cat("\nStep 3.2.1 - Computing the relative clusters for ALL thresholds:\n")
-print(step3_2_1)
-cat("\nStep 3.2.2 - Filtering the hierarchical clustering results:\n")
-print(step3_2_2)
-cat("\nStep 3.2.3 - Quantifying the hierarchical clustering:\n")
-print(step3_2_3)
-cat("\nStep 3.2.5 - Plotting the resulting clusters:\n")
-print(step3_2_5)
+# cat("Step 3.1 - Filtering the input data:\n")
+# print(step3_1)
+# cat("\nStep 3.2.1 - Computing the relative clusters for ALL thresholds:\n")
+# print(step3_2_1)
+# cat("\nStep 3.2.2 - Filtering the hierarchical clustering results:\n")
+# print(step3_2_2)
+# cat("\nStep 3.2.3 - Quantifying the hierarchical clustering:\n")
+# print(step3_2_3)
+# cat("\nStep 3.2.5 - Plotting the resulting clusters:\n")
+# print(step3_2_5)
 
 # Close the file connection
-sink()
+#sink()
 
 
