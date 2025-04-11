@@ -1,10 +1,19 @@
 Package: doblin
-Title: Doblin: Extraction of Dominant barcoded lineages
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description:Given a time series of cell line abundance, Doblin extracts clonal lineages. These clonal lineages can be used to impute the clonal dynamics of a biological system. To retrieve the clonal lineages, we group cell lines with similar trajectories (based on either Pearson's or DTW similarity metric) and consider the corresponding LOESS curve.
+Title: Inferring Dominant Clonal Lineages from DNA Barcoding Time-Series
+Version: 0.1-1
+Authors@R: c(
+		person("Adrian", "Serohijos", role = c("aut", "cre"), email = "adrian.serohijos@umontreal.ca"),
+		person("David", "Gagné-Leroux", role = c("ctb"), email = "david.gagne-leroux@umontreal.ca"),
+		person("Melis", "Gencel", role = c("ctb")),
+		person("Louis", "Gauthier", role = c("ctb")))
+Author: 
+    Adrian Serohijos [aut, cre],
+    David Gagné-Leroux [ctb],
+    Melis Gencel [ctb],
+    Louis Gauthier [ctb]
+Maintainer:
+    Adrian Serohijos <adrian.serohijos@umontreal.ca>
+Description:We developed Doblin, an R suite for quantifying dominant clonal lineages from DNA barcoding time-series data. This package performs clustering of barcode lineage time-series, leveraging the idea that similarities in lineage trajectories reflect comparable relative fitness values. Our approach also identifies persistent clonal lineages in the population. Input data can also be time-series of mutants from selection experiments of mutational libraries or variants from CRISPR/Cas screens.
 Imports:
     grid,
     ggthemes,
@@ -25,14 +34,14 @@ Imports:
     purrr,
     tidyr,
     TSdist
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3.9000
 Suggests: 
     knitr,
     rmarkdown,
+    pandoc,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
