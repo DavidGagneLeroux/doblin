@@ -1,12 +1,19 @@
-#' A reshape function
+#' Reshape Barcode Abundance Data to Frequency Format
 #'
-#' This function allows you to reshape your data for further manipulation.
-#' The given input is a format with ID, Time and Reads columns.
-#' We reshape it to obtain a dataframe containing the max, start, final and average frequencies of each ID.
+#' Transforms raw barcode abundance data into a tidy long-format data frame, computing summary statistics
+#' for each barcode (ID), including maximum, initial, final, and average frequencies across time points.
 #'
-#' @param input_data a dataframe with ID, Time and Reads columns.
-#' @return A dataframe containing the max, start, final and average frequencies of each ID in decreasing order of maximum frequency.
-#' @export reshapeData
+#' This function expects a data frame with three columns: `ID`, `Time`, and `Reads`.
+#' Frequencies are computed by normalizing the `Reads` across all barcodes for each time point.
+#'
+#' @param input_data A data frame with exactly three columns: `ID` (character or factor),
+#'   `Time` (numeric), and `Reads` (numeric). Each row corresponds to a measurement for one barcode at one time point.
+#'
+#' @return A tidy data frame with columns: `ID`, `max`, `start`, `final`, `mean`, `Time`, and `Frequency`.
+#'   Frequencies are normalized across all barcodes per time point. The result is ordered by decreasing `max` frequency.
+#'
+#' @export
+#' @name reshapeData
 
 reshapeData <- function(input_data) {
 

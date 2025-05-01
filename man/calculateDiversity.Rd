@@ -7,7 +7,7 @@
 \alias{calculate_q_0}
 \alias{calculate_q_1}
 \alias{calculate_q_inf}
-\title{A function to calculate a sample's diversity}
+\title{Calculate diversity indices for a sample}
 \usage{
 calculate_diversity(input_data)
 
@@ -20,19 +20,45 @@ calculate_q_1(mat)
 calculate_q_inf(mat)
 }
 \arguments{
-\item{input_data}{input dataframe given by user}
+\item{input_data}{A data frame with columns ID, Time, and Reads.
+Represents barcode counts per lineage at each time point.}
 
-\item{sample}{input dataframe given by user}
+\item{sample}{A data frame with columns ID, Time, and Reads.}
 
-\item{mat}{matrix containing the number of barcodes (READS) for each ID over each time-point}
+\item{mat}{A matrix of relative abundances, with IDs as rows and time points as columns.}
 }
 \value{
-A dataframe containing all diversity indices for a sample.
+A data frame containing three diversity indices over time:
+q_0 (richness), q_1 (Shannon), and q_inf (dominance).
+
+A wide-format data frame suitable for diversity calculations.
+
+A data frame with one column: q_0.
+
+A data frame with one column: q_1.
+
+A data frame with one column: q_inf.
 }
 \description{
-Here, we compute the input's barcode diversity.
-This file contains multiple functions. The main function is: calculate_diversity()
-and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
-While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity
-index for different q-values, calculate_diversity() binds the indices together.
+This is the main function to compute barcode diversity indices for a given sample.
+It calculates three common diversity measures: species richness (q = 0),
+Shannon diversity (q = 1), and dominance-based diversity (q = infinity).
+
+Reshapes a long-format data frame into wide format, with lineage IDs as rows
+and time points as columns. Replaces missing values with zeros.
+
+Calculates the number of lineages with nonzero frequency at each time point.
+
+Calculates the Shannon entropy at each time point and returns its exponential form.
+This measure considers both the number and evenness of lineages.
+
+Calculates the reciprocal of the most abundant lineage's frequency at each time point.
+This measure reflects the dominance of the most frequent lineage.
+}
+\details{
+Internally, the function calls:
+\itemize{
+\item format_sample() to reshape the data
+\item calculate_q_0(), calculate_q_1(), and calculate_q_inf() to compute each diversity index
+}
 }

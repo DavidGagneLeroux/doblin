@@ -1,20 +1,20 @@
-#' Filtering the hierarchical clusters
+#' Filter Hierarchical Clusters Based on Size and Dominance
 #'
-#' Once the hierarchical clustering is done, we keep only the clusters with at least "n_members" members.
-#' By ignoring clusters with fewer than"n_members" members, we are potentially ignoring dominant clusters.
-#' To prevent this, we ask the user to provide a minimum average frequency that must be reached by at least
-#' one of the lineages of potentially ignored clusters for them to be taken into account.
+#' This function filters the results of hierarchical clustering by retaining only clusters
+#' that contain at least `n_members` unique lineages. To avoid excluding potentially dominant but small clusters,
+#' the user is prompted to specify a minimum average frequency. Any small clusters with at least one lineage
+#' exceeding this frequency threshold will be retained.
 #'
-#' @name filterHC
-#' @param series_filtered a dataframe filtered by filterData()
-#' @param clusters a dataframe containing the clusters from a hierarchical clustering
-#'  for one or multiple thresholds
-#' @param n_members an integer indicating the minimum number of members per cluster
-#' @return A list containing a dataframe with the resulting filtered clusters, and
-#' the minimum average frequency that must be reached by at least
-#' one of the lineages of potentially ignored clusters for them to be taken into account
+#' @param series_filtered A data frame preprocessed using `filterData()`, containing lineage frequencies and metadata.
+#' @param clusters A data frame containing hierarchical clustering assignments (e.g., from `cutree()`), possibly across multiple thresholds.
+#' @param n_members An integer specifying the minimum number of members (lineages) required for a cluster to be retained.
+#'
+#' @return A data frame containing the filtered clusters, including both large clusters and small clusters with at least
+#' one dominant member (based on average frequency threshold).
 #' @import dplyr
-#' @export filterHC
+#' @export
+#' @name filterHC
+
 
 filterHC <- function(series_filtered, clusters, n_members){
 

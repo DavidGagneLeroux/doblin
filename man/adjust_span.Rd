@@ -2,18 +2,31 @@
 % Please edit documentation in R/adjust_span.R
 \name{adjust_span}
 \alias{adjust_span}
-\title{Recursively calculates the span for a LOESS curve.}
+\title{Recursively adjust the LOESS span to ensure a stable fit}
 \usage{
 adjust_span(x, y, span)
 }
 \arguments{
-\item{x}{numeric data from a dataframe for which we want to produce a LOESS curve}
+\item{x}{A numeric vector representing the predictor variable (e.g., time or position).}
 
-\item{y}{numeric data from a dataframe for which we want to produce a LOESS curve}
+\item{y}{A numeric vector representing the response variable to be smoothed.
+Must be non-negative due to log-transformation.}
 
-\item{span}{a double representing the desired span to compute the LOESS curves}
+\item{span}{A numeric value specifying the smoothing parameter for the LOESS fit.
+Defaults to a low value (e.g., 0.2) and is increased recursively if the fit fails.}
+}
+\value{
+A fitted loess object if a valid fit is achieved.
 }
 \description{
-In general, the distribution and quantity of data influences the value of the LOESS's span.
-To avoid manipulation of the span by the user, its value is computed recursively from an initial value of 0.2.
+This function attempts to fit a LOESS (Locally Estimated Scatterplot Smoothing)
+curve to the provided data using a span parameter that controls the degree of smoothing.
+If the initial fit produces NA values in key components of the model object,
+the function recursively increases the span until a stable fit is achieved or
+the span exceeds 1.
+}
+\details{
+This approach avoids requiring the user to manually tune the span, instead
+adapting to the data distribution and scale. The fit is performed on the
+log-transformed y values to reduce skewness and avoid numerical instability.
 }

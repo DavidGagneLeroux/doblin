@@ -2,18 +2,23 @@
 % Please edit documentation in R/reshapeData.R
 \name{reshapeData}
 \alias{reshapeData}
-\title{A reshape function}
+\title{Reshape Barcode Abundance Data to Frequency Format}
 \usage{
 reshapeData(input_data)
 }
 \arguments{
-\item{input_data}{a dataframe with ID, Time and Reads columns.}
+\item{input_data}{A data frame with exactly three columns: \code{ID} (character or factor),
+\code{Time} (numeric), and \code{Reads} (numeric). Each row corresponds to a measurement for one barcode at one time point.}
 }
 \value{
-A dataframe containing the max, start, final and average frequencies of each ID in decreasing order of maximum frequency.
+A tidy data frame with columns: \code{ID}, \code{max}, \code{start}, \code{final}, \code{mean}, \code{Time}, and \code{Frequency}.
+Frequencies are normalized across all barcodes per time point. The result is ordered by decreasing \code{max} frequency.
 }
 \description{
-This function allows you to reshape your data for further manipulation.
-The given input is a format with ID, Time and Reads columns.
-We reshape it to obtain a dataframe containing the max, start, final and average frequencies of each ID.
+Transforms raw barcode abundance data into a tidy long-format data frame, computing summary statistics
+for each barcode (ID), including maximum, initial, final, and average frequencies across time points.
+}
+\details{
+This function expects a data frame with three columns: \code{ID}, \code{Time}, and \code{Reads}.
+Frequencies are computed by normalizing the \code{Reads} across all barcodes for each time point.
 }

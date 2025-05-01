@@ -2,19 +2,23 @@
 % Please edit documentation in R/fetchTop.R
 \name{fetchTop}
 \alias{fetchTop}
-\title{A fetching function}
+\title{Fetch Top Barcodes by Maximum Frequency}
 \usage{
 fetchTop(reshaped_df, N_LINEAGES)
 }
 \arguments{
-\item{reshaped_df}{a dataframe returned by reshapeData()}
+\item{reshaped_df}{A dataframe returned by \code{reshapeData()}. Only the first
+four columns are used.}
 
-\item{N_LINEAGES}{integer representing the number of barcodes to fetch}
+\item{N_LINEAGES}{An integer specifying the number of barcodes to retrieve.}
 }
 \value{
-top N barcodes according to their maximum frequencies.
+A dataframe containing the top \code{N_LINEAGES}. Used for selecting
+dominant lineages for plotting or analysis.
 }
 \description{
-This function allows you to retrieve the top N_LINEAGES barcodes.
-The top N_LINEAGES barcodes are recovered according to their maximum frequencies.
+This function retrieves the top \code{N_LINEAGES} barcodes from a reshaped dataframe,
+as returned by \code{reshapeData()}. The top barcodes are assumed to be located in the
+first \code{N_LINEAGES} rows of the reshaped dataframe. This implies that \code{reshaped_df}
+should already be sorted by descending maximum frequency for correct behavior.
 }

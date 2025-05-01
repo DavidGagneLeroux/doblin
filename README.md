@@ -2,13 +2,13 @@
 
 ## Developed by the <http://www.serohijoslab.org/>
 
-## Follow the Readme or [Download the Doblin user guide](https://github.com/dagagf/doblin/blob/master/vignettes/doblin.pdf) for a complete step-by-step on how to use our tool.
+## Follow the Readme or [Download the Doblin user guide](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/doblin.pdf) for a complete step-by-step on how to use our tool.
 
 ## Overview
 
 As microbial populations exhibit complex lineage dynamics, interpreting such data poses considerable challenges. To address this, we developed *Doblin*, an R-based pipeline designed to extract meaningful insights from complex DNA barcoding time series data obtained through longitudinal sampling. *Doblin* employs a clustering approach to group relative abundance trajectories based on their shape. This method effectively clusters lineages with similar relative abundance patterns, thereby reflecting comparable fitness levels. *Doblin's* final product reveals the dominant and persistent trends within the complex dataset, providing clearer insights into microbial population dynamics.
 
-![](https://github.com/dagagf/doblin/blob/master/vignettes/images/doblin_readme.jpg?raw=true)
+![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/doblin_readme.jpg?raw=true)
 
 The primary purpose of *Doblin* is to furnish an open-source toolkit for the preliminary analysis of abundance time series obtained via *Next Generation Sequencing* (NGS), thereby laying the groundwork for ecological and evolutionary studies of microbial populations.
 
@@ -23,7 +23,7 @@ The primary purpose of *Doblin* is to furnish an open-source toolkit for the pre
 **Step 3:** Clone the repository using git command. Then, set your working directory to the `doblin/` folder.
 
 ```
-    ~$ git clone https://github.com/dagagf/doblin
+    ~$ git clone https://github.com/DavidGagneLeroux/doblin
     ~$ cd doblin
 ```
     
@@ -85,9 +85,9 @@ Do you want to plot a log-scale model, a linear-scale model or both? (logarithmi
 ```
 The following figures represent respectively the log-transformed and the linear representations of the dataset's dynamics.
 
-![](https://github.com/dagagf/doblin/blob/master/vignettes/images/test_line.jpg?raw=true)
+![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/test_line.jpg?raw=true)
 
-![](https://github.com/dagagf/doblin/blob/master/vignettes/images/test_area.jpg?raw=true)
+![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/test_area.jpg?raw=true)
 
 ### Diversity
 
@@ -101,7 +101,7 @@ Do you want to plot the diversity of your dataset?(y/n): y
 
 When q = 0, the index counts the absolute diversity in the sample, equivalent to species richness in ecological studies. When q = 1, the index weights each barcode lineage by its frequency, equivalent to the exponential of Shannon entropy H. When q → ∞, the index is the reciprocal of the proportional abundance of the most common barcode lineages, focusing only on higher-frequency lineages. The following figure illustrates the temporal evolution of the dataset's diversity indices.
 
-![](https://github.com/dagagf/doblin/blob/master/vignettes/images/test_diversity.jpg?raw=true)
+![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/test_diversity.jpg?raw=true)
 
 ### Clonal Clusters
 
@@ -143,7 +143,7 @@ To determine the optimal clustering threshold in our hierarchical clustering pro
 
 Our approach involves identifying the cross-over point between the smallest distance between cluster centroids (represented by their respective LOESS average) and the number of clusters. To accomplish this, we compute relative clusters for thresholds ranging from 0.1 to the maximum height of the hierarchical clustering tree. This step empowers users to visualize potential clusters across varying thresholds, enabling informed decision-making regarding the selection of an appropriate threshold. By balancing between sensitivity, cluster distinctiveness, and similarity, users can effectively identify the optimal threshold for their analysis. The figure below illustrates the relationship between the number of clusters (blue curve), and the smallest distance between cluster centroids (black curve). As the distance between clusters diminishes, the number of generated clusters tends to increase. Optimal clustering typically occurs around the crossover point (in this case: 0.2).
 
-![](https://github.com/dagagf/doblin/blob/master/vignettes/images/test_threshold_selection.jpg?raw=true)
+![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/test_threshold_selection.jpg?raw=true)
 
 ```
 [1] "3.2.3 Quantifying the hierarchical clustering..."

@@ -15,6 +15,10 @@ Maintainer:
     Adrian Serohijos <adrian.serohijos@umontreal.ca>
 Description:We developed Doblin, an R suite for quantifying dominant clonal lineages from DNA barcoding time-series data. This package performs clustering of barcode lineage time-series, leveraging the idea that similarities in lineage trajectories reflect comparable relative fitness values. Our approach also identifies persistent clonal lineages in the population. Input data can also be time-series of mutants from selection experiments of mutational libraries or variants from CRISPR/Cas screens.
 Imports:
+    entropy,
+    gplots,
+    lazyeval,
+    proxy,
     grid,
     ggthemes,
     ggplot2,
@@ -25,23 +29,20 @@ Imports:
     data.table,
     reshape2,
     grDevices,
-    optparse,
-    ggpubr,
     stats,
     imputeTS,
-    data.table,
     dtwclust,
     purrr,
     tidyr,
-    TSdist
-License: GPL-3
+    TSdist,
+    graphics
+License: GPL-3 | file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3.9000
 Suggests: 
     knitr,
     rmarkdown,
-    pandoc,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3

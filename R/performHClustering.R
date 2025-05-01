@@ -1,24 +1,22 @@
-#' Get the clusters resulting from the hierarchical clustering of the barcoded lineages.
+#' Perform Hierarchical Clustering on Barcoded Lineages
 #'
-#' This function uses the data filtered by filterData() to compute a distance matrix
-#' according to pearson's or dtw's approach. From the resulting matrix, we proceed
-#' to a hierarchical clustering of the data according to a given agglomeration method.
-#' Then, in order to visualize the results,we plot a dendrogram and a heatmap.
-#' Finally, if no threshold is provided, we compute the relative clusters for ALL
-#' thresholds between 0.1 and maximum height of hierarchical clustering tree. This step allows the
-#' user to visualize the possible clusters and make an informed choice about which
-#' threshold to use.
+#' This function performs hierarchical clustering on time-series data representing barcoded lineages.
+#' A distance matrix is computed using either Pearson correlation or Dynamic Time Warping (DTW),
+#' and hierarchical clustering is applied using a specified agglomeration method.
+#' A dendrogram and heatmap are generated for visual inspection. If no threshold is specified,
+#' clusters are computed for all possible thresholds between 0.1 and the maximum tree height.
 #'
-#' @param filtered_data a dataframe filtered by filterData()
-#' @param agglomeration_method a character string indicating which method is to be used for agglomeration
-#' @param similarity_metric a character string indicating which metric to be used to measure similarity between two time-series
-#' @param missing_values a character string indicating which method is to be used to manage missing values while computing covariances
-#' @return A dataframe containing the resulting clusters of a hierarchical clustering
-#'  for one or multiple thresholds
-#' @export perform_hierarchical_clustering
+#' @param filtered_data A data frame preprocessed with `filterData()`, containing filtered lineage frequencies.
+#' @param agglomeration_method A character string specifying the agglomeration method (e.g., `"ward.D"`, `"complete"`).
+#' @param similarity_metric A character string specifying the similarity metric (`"pearson"` or `"dtw"`).
+#' @param missing_values A character string specifying how missing values should be handled in Pearson correlation (e.g., `"pairwise.complete.obs"`).
+#'
+#' @return A data frame with clustering assignments at multiple thresholds (columns named by height).
+#' @export
+#' @name performHClustering
 
 
-perform_hierarchical_clustering <- function(filtered_data, agglomeration_method, similarity_metric, missing_values = NULL){
+performHClustering <- function(filtered_data, agglomeration_method, similarity_metric, missing_values = NULL){
 
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
@@ -78,12 +76,12 @@ perform_hierarchical_clustering <- function(filtered_data, agglomeration_method,
   }
 
   ## Plot dendrogram:
-  as.dendrogram(clust) -> dend
+  stats::as.dendrogram(clust) -> dend
 
   grDevices::postscript(paste(output_directory, input_name,"_", similarity_metric, ".eps",sep=""),width = 5.5,height = 5)
   #output_filename <- paste(output_directory, input_name, "_", similarity_metric, ".png", sep = "")
   #png(output_filename, width = 5.5, height = 5)
-  par(mar = c(2,2,2,2))
+  graphics::par(mar = c(2,2,2,2))
 
   ## Plot heatmap:
   gplots::heatmap.2(distmat,Rowv = dend,Colv = dend,col=rev(color_palette),density.info = "none",trace = "none",
@@ -98,7 +96,7 @@ perform_hierarchical_clustering <- function(filtered_data, agglomeration_method,
   range<- seq(from=0.1, to=max(clust$height), by=0.01)
   cluster_file=list()
   for( i in 1:length(range)){
-    cut_avg <- as.data.frame(cutree(clust, h=range[i]))
+    cut_avg <- as.data.frame(stats::cutree(clust, h=range[i]))
     names(cut_avg)[1]=range[i]
     cluster_file[[i]]=cut_avg
   }

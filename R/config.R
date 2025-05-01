@@ -1,5 +1,12 @@
-#' configuration functions
+#' Custom ggplot2 theme for publication-style figures
+#' 
+#' @param base_size Base font size.
+#' @param base_family Base font family.
+#' @param aspect.ratio Aspect ratio of the plot.
+#'
+#' @return A ggplot2 theme object.
 #' @export
+
 theme_Publication <- function(base_size=24, base_family="Arial",aspect.ratio = 0.75) {
   (ggthemes::theme_foundation(base_size=base_size, base_family=base_family)
    + theme(plot.title = element_text(face = "bold",
@@ -20,6 +27,12 @@ theme_Publication <- function(base_size=24, base_family="Arial",aspect.ratio = 0
            aspect.ratio=aspect.ratio
    ))
 }
+
+#' Custom ggplot2 theme with no y-axis title
+#' @inheritParams theme_Publication
+#'
+#' @return A ggplot2 theme object.
+#' @export
 
 theme_Publication_noYaxis <- function(base_size=24, base_family="Arial",aspect.ratio = 0.75) {
 
@@ -43,10 +56,15 @@ theme_Publication_noYaxis <- function(base_size=24, base_family="Arial",aspect.r
     ))
 }
 
+#' Theme for matrix-style plots (e.g. heatmaps or abundance matrices)
+#' @param base_size Base font size.
+#' @param base_family Base font family.
+#'
+#' @return A ggplot2 theme object.
+#' @export
+
 theme_Matrix <- function(base_size=24, base_family="Arial") {
-  library(grid)
-  library(ggthemes)
-  (theme_foundation(base_size=base_size, base_family=base_family)
+  (ggthemes::theme_foundation(base_size=base_size, base_family=base_family)
     + theme(plot.title = element_text(size = rel(1.2), hjust = 0.5),
             text = element_text(),
             panel.background = element_rect(colour = NA, fill="#FCFCFC"),
@@ -63,6 +81,20 @@ theme_Matrix <- function(base_size=24, base_family="Arial") {
             legend.title.align = 0.5,
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
-            plot.margin=unit(c(10,5,5,5),"mm")
+            plot.margin=grid::unit(c(10,5,5,5),"mm")
     ))
 }
+
+#' Global variables
+
+
+utils::globalVariables(c(
+  "output_directory", "input_name", "ID", "pipeline_choice","mean_freq",
+  "cumulative_freq", "value", "cluster", "time", "frequency", "Generations",
+  "q_value", "q_type", "hex", "LONG_COLOR_LIST_RAND", ".", "iso1", "iso2",
+  "dist", "dist_small", "cutoff", "Frequency", "average", "Time"
+))
+
+cluster.colors=c("#3cb44b","#4363d8","#e6194B","#e8ca00","#911eb4","#f58231","#22766dff","#42d4f4","#f032e6","#9A6324",
+                 "#2F4C39", "#1D3F6E","#94170f","#665679","#F17829","#97A69C","#606EA9","#A9606E","#A99060","#F8F1AE",
+                 "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8")

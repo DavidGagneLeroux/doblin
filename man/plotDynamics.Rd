@@ -2,19 +2,20 @@
 % Please edit documentation in R/plotDynamics.R
 \name{plotDynamics}
 \alias{plotDynamics}
-\title{A plot function}
+\title{Plot barcode dynamics}
 \usage{
 plotDynamics(reshaped_df, colored_topFreq_df, min_freq_threshold, plot_model)
 }
 \arguments{
-\item{reshaped_df}{a dataframe produced by reshapeData()}
+\item{reshaped_df}{A dataframe produced by \code{reshapeData()}, containing barcode frequencies over time.}
 
-\item{colored_topFreq_df}{a dataframe containing the top barcodes with their respective colors}
+\item{colored_topFreq_df}{A dataframe with top barcodes and their assigned color hex codes and max frequencies.}
 
-\item{min_freq_threshold}{a double representing the minimum frequency above which barcodes are assigned colors}
+\item{min_freq_threshold}{A numeric threshold; barcodes with max frequency below this are colored gray.}
 
-\item{plot_model}{a character string indicating what kind of plot the user wants to model}
+\item{plot_model}{One of \code{"linear"}, \code{"logarithmic"}, or \code{"both"} to specify the plot type(s).}
 }
 \description{
-This function allows you to plot barcode dynamics (logarithmic-scale and/or linear-scale).
+This function plots the dynamics of barcode frequencies over time, using either linear-scale
+area plots, logarithmic-scale line plots, or both. Only the most frequent barcodes are colored.
 }

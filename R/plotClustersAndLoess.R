@@ -11,13 +11,10 @@
 #'  for a specific threshold
 #' @import dplyr
 #' @import ggplot2
-#' @export plot_clusters_and_loess
+#' @export 
 
-cluster.colors=c("#3cb44b","#4363d8","#e6194B","#e8ca00","#911eb4","#f58231","#22766dff","#42d4f4","#f032e6","#9A6324",
-                 "#2F4C39", "#1D3F6E","#94170f","#665679","#F17829","#97A69C","#606EA9","#A9606E","#A99060","#F8F1AE",
-                 "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8")
 
-plot_clusters_and_loess <- function(selected_clusters){
+plotClustersAndLoess <- function(selected_clusters){
 
 #######################################################################
 # Clusters are ordered according to two criteria:
@@ -100,8 +97,18 @@ plot_clusters_and_loess <- function(selected_clusters){
 }
 
 #################
+#' Plot individual barcode frequencies (log10) for a single cluster
+#'
+#' Plots all barcodes in a cluster on a log10 y-scale, along with the LOESS-smoothed average trajectory.
+#'
+#' @name plotClusterLog10
+#' @param df A dataframe containing barcode frequencies in a single cluster.
+#' @param cluster The cluster ID (numeric or character).
+#' @param color A color code to use for the cluster.
+#' @param tf A dataframe containing the LOESS-smoothed trajectory for the cluster.
+#' @param effective.breaks A vector of time points used as breaks on the x-axis.
+#' @return A ggplot object.
 #' @export
-#' @rdname plotClustersAndLoess
 
 # plot clusters
 plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
@@ -127,8 +134,12 @@ plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
 }
 
 #################
+#' Apply LOESS smoothing to barcode trajectories
+#'
+#' @name apply_LOESS
+#' @param c_series A dataframe containing `time`, `frequency`, and `cluster` columns.
+#' @return A dataframe with LOESS-smoothed values.
 #' @export
-#' @rdname plotClustersAndLoess
 
 apply_LOESS <- function(c_series){
 
@@ -139,7 +150,7 @@ apply_LOESS <- function(c_series){
   xx <- seq(from=min(c_series$time), to=max(c_series$time),length.out = loess.range)
 
   cluster.df=c_series %>%  dplyr::group_by(cluster) %>%
-    dplyr::summarise(value=predict(adjust_span(time, frequency, span = 0.2),xx,se = FALSE))  %>%
+    dplyr::summarise(value=stats::predict(adjust_span(time, frequency, span = 0.2),xx,se = FALSE))  %>%
     dplyr::group_by(cluster) %>% dplyr::mutate(time=xx)
 
   ## Plot log10-transformed barcode frequencies
@@ -155,6 +166,4 @@ apply_LOESS <- function(c_series){
 
   return(cluster.df)
 }
-
-
 

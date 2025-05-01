@@ -1,19 +1,16 @@
-#' Plot hierarchical clustering quantification
+#' Quantify and Visualize Hierarchical Clustering Results
 #'
-#' This file contains multiple functions. The main function is plotHCQuantification()
-#' and it uses melt_dist(), applyLOESS() and adjust_span(). plotHCQuantification() is called right after perform_hierarchical_clustering()
-#' and uses the resulting dataframe. First, we compute the moving average of barcode
-#' frequencies for each cluster USING LOESS. The moving average is computed using only
-#' the persistent barcodes and each cluster must contain at least N members. Then,
-#' we calculate the smallest distance between clones (for all thresholds). We plot
-#' a graph representing the smallest distance between two clusters and the number of clusters
-#' according to the threshold.
+#' This script contains several functions to help quantify and visualize the results of hierarchical clustering
+#' on barcode time-series data. The main function is `plotHCQuantification()`, which computes a LOESS-smoothed
+#' average of barcode frequencies per cluster and evaluates inter-cluster distances across different clustering thresholds.
+#'
 #'
 #' @name plotHCQuantification
-#' @param clusters_filtered a dataframe filtered by filterHC()
+#' @param clusters_filtered A data frame output from `filterHC()`, containing barcode frequencies with cluster labels across time points.
 #' @import dplyr
 #' @import ggplot2
-#' @export plotHCQuantification
+#' @export 
+
 
 plotHCQuantification <- function(clusters_filtered){
 
@@ -75,6 +72,17 @@ plotHCQuantification <- function(clusters_filtered){
 }
 
 #################
+#' @param dist A distance matrix (typically a result of a distance computation).
+#' @param order Optional character vector indicating the order of row/column names
+#'  to rearrange the matrix before melting.
+#' @param dist_name A string naming the distance variable in the resulting data frame.
+#'  Default is "dist".
+#' @description The melt_dist() function takes a distance matrix and converts it
+#'  into a long-format data frame where each row corresponds to a unique pair of
+#'   elements and their associated distance. It essentially "melts" the lower 
+#'   triangle of the matrix into a tidy format, which is useful for plotting or 
+#'   further analysis.
+#' @return A data frame with columns: `iso1`, `iso2`, and the specified distance column.
 #' @export
 #' @rdname plotHCQuantification
 
@@ -94,8 +102,18 @@ melt_dist <- function(dist, order = NULL, dist_name = 'dist') {
 }
 
 #################
+#' Apply LOESS Smoothing to Clustered Time-Series Data
+#'
+#' Applies LOESS smoothing to barcode frequencies within each cluster over time,
+#' using only the persistent barcodes (those present at the last time point).
+#' Clusters are re-ranked within each threshold based on their average final frequency.
+#'
+#' @param clusters_filtered A data frame filtered by `filterHC()`, containing `cluster`, `cutoff`, `Time`, and `Frequency` columns.
+#'
+#' @return A data frame with smoothed values for each cluster and time point: columns include `cluster`, `cutoff`, `model`, and `time`.
 #' @export
 #' @rdname plotHCQuantification
+
 
 applyLOESS <- function(clusters_filtered){
 
@@ -120,7 +138,7 @@ applyLOESS <- function(clusters_filtered){
   xx <- seq(from=min(clusters_filtered$Time), to=max(clusters_filtered$Time),length.out = loess.range)
 
   grouped_df=clusters_filtered %>%  dplyr::group_by(cluster,cutoff)
-  spanned_grouped_df = grouped_df %>% dplyr::summarise(model=predict(adjust_span(Time, Frequency, span = 0.2),xx,se = FALSE))
+  spanned_grouped_df = grouped_df %>% dplyr::summarise(model=stats::predict(adjust_span(Time, Frequency, span = 0.2),xx,se = FALSE))
   grouped_span_df = spanned_grouped_df %>% dplyr::group_by(cluster,cutoff) %>% dplyr::mutate(time=xx)
 
   return(grouped_span_df)

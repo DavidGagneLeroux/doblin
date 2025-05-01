@@ -4,7 +4,7 @@
 \alias{plotHCQuantification}
 \alias{melt_dist}
 \alias{applyLOESS}
-\title{Plot hierarchical clustering quantification}
+\title{Quantify and Visualize Hierarchical Clustering Results}
 \usage{
 plotHCQuantification(clusters_filtered)
 
@@ -13,15 +13,33 @@ melt_dist(dist, order = NULL, dist_name = "dist")
 applyLOESS(clusters_filtered)
 }
 \arguments{
-\item{clusters_filtered}{a dataframe filtered by filterHC()}
+\item{clusters_filtered}{A data frame filtered by \code{filterHC()}, containing \code{cluster}, \code{cutoff}, \code{Time}, and \code{Frequency} columns.}
+
+\item{dist}{A distance matrix (typically a result of a distance computation).}
+
+\item{order}{Optional character vector indicating the order of row/column names
+to rearrange the matrix before melting.}
+
+\item{dist_name}{A string naming the distance variable in the resulting data frame.
+Default is "dist".}
+}
+\value{
+A data frame with columns: \code{iso1}, \code{iso2}, and the specified distance column.
+
+A data frame with smoothed values for each cluster and time point: columns include \code{cluster}, \code{cutoff}, \code{model}, and \code{time}.
 }
 \description{
-This file contains multiple functions. The main function is plotHCQuantification()
-and it uses melt_dist(), applyLOESS() and adjust_span(). plotHCQuantification() is called right after perform_hierarchical_clustering()
-and uses the resulting dataframe. First, we compute the moving average of barcode
-frequencies for each cluster USING LOESS. The moving average is computed using only
-the persistent barcodes and each cluster must contain at least N members. Then,
-we calculate the smallest distance between clones (for all thresholds). We plot
-a graph representing the smallest distance between two clusters and the number of clusters
-according to the threshold.
+This script contains several functions to help quantify and visualize the results of hierarchical clustering
+on barcode time-series data. The main function is \code{plotHCQuantification()}, which computes a LOESS-smoothed
+average of barcode frequencies per cluster and evaluates inter-cluster distances across different clustering thresholds.
+
+The melt_dist() function takes a distance matrix and converts it
+into a long-format data frame where each row corresponds to a unique pair of
+elements and their associated distance. It essentially "melts" the lower
+triangle of the matrix into a tidy format, which is useful for plotting or
+further analysis.
+
+Applies LOESS smoothing to barcode frequencies within each cluster over time,
+using only the persistent barcodes (those present at the last time point).
+Clusters are re-ranked within each threshold based on their average final frequency.
 }

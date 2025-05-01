@@ -2,17 +2,17 @@
 % Please edit documentation in R/plotDiversity.R
 \name{plotDiversity}
 \alias{plotDiversity}
-\title{A function to plot the diversity dynamics}
+\title{Plot diversity dynamics over time}
 \usage{
 plotDiversity(dataframe)
 }
 \arguments{
-\item{dataframe}{a dataframe containing the barcode diversities for each sample}
+\item{dataframe}{A data frame containing barcode diversities with columns for generations and diversity metrics.}
 }
 \value{
-A plot of the diversity over time.
+A faceted ggplot object (invisible). The function also saves the figure to an EPS file.
 }
 \description{
-This function allows you to plot barcode diversities for a sample. We save
-a multi-panel figure with all diversities and the legend.
+This function plots the diversity of barcoded populations across generations.
+A multi-panel EPS figure is saved, showing one panel per diversity order.
 }

@@ -2,26 +2,24 @@
 % Please edit documentation in R/filterHC.R
 \name{filterHC}
 \alias{filterHC}
-\title{Filtering the hierarchical clusters}
+\title{Filter Hierarchical Clusters Based on Size and Dominance}
 \usage{
 filterHC(series_filtered, clusters, n_members)
 }
 \arguments{
-\item{series_filtered}{a dataframe filtered by filterData()}
+\item{series_filtered}{A data frame preprocessed using \code{filterData()}, containing lineage frequencies and metadata.}
 
-\item{clusters}{a dataframe containing the clusters from a hierarchical clustering
-for one or multiple thresholds}
+\item{clusters}{A data frame containing hierarchical clustering assignments (e.g., from \code{cutree()}), possibly across multiple thresholds.}
 
-\item{n_members}{an integer indicating the minimum number of members per cluster}
+\item{n_members}{An integer specifying the minimum number of members (lineages) required for a cluster to be retained.}
 }
 \value{
-A list containing a dataframe with the resulting filtered clusters, and
-the minimum average frequency that must be reached by at least
-one of the lineages of potentially ignored clusters for them to be taken into account
+A data frame containing the filtered clusters, including both large clusters and small clusters with at least
+one dominant member (based on average frequency threshold).
 }
 \description{
-Once the hierarchical clustering is done, we keep only the clusters with at least "n_members" members.
-By ignoring clusters with fewer than"n_members" members, we are potentially ignoring dominant clusters.
-To prevent this, we ask the user to provide a minimum average frequency that must be reached by at least
-one of the lineages of potentially ignored clusters for them to be taken into account.
+This function filters the results of hierarchical clustering by retaining only clusters
+that contain at least \code{n_members} unique lineages. To avoid excluding potentially dominant but small clusters,
+the user is prompted to specify a minimum average frequency. Any small clusters with at least one lineage
+exceeding this frequency threshold will be retained.
 }

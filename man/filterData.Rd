@@ -2,25 +2,23 @@
 % Please edit documentation in R/filterData.R
 \name{filterData}
 \alias{filterData}
-\title{Filtering the input file}
+\title{Filter Lineage Data for Clustering}
 \usage{
 filterData(input_df, freq_threshold, time_threshold)
 }
 \arguments{
-\item{input_df}{input file given by the user}
+\item{input_df}{A data frame containing the input data. It must have columns \code{ID}, \code{Time}, and \code{Reads}.}
 
-\item{time_threshold}{an integer indicating the time-point threshold (i.e. we keep the lineages with at least "time_threshold" non-zero time points)}
+\item{freq_threshold}{A numeric value specifying the minimum mean frequency required to retain a barcode.}
 
-\item{freq_treshold}{a double representing a minimum mean frequency below which
-the data is not retained for clustering.}
+\item{time_threshold}{An integer specifying the minimum number of time points where the barcode's frequency is non-zero.}
 }
 \value{
-a matrix containing the ID,
-frequency at each time point, average frequency and duration of each remaining barcode
+A data frame containing the ID, relative frequency at each time point, mean frequency, and number of non-zero time points for each retained barcode.
 }
 \description{
-This function is used to clean the input data given by the user in order to perform
-the clustering. We set a minimum mean frequency and a minimum time-point threshold below which
-the data is not retained for clustering. The function writes a csv file containing the ID,
-frequency at each time point, average frequency and duration of each remaining barcode.
+This function filters lineage frequency data to retain only dominant and persistent barcodes
+suitable for clustering. It removes barcodes that do not meet a specified minimum mean frequency
+and a minimum number of time points with non-zero frequency. The function saves two CSV files:
+one with all original barcodes and one with the filtered set.
 }

@@ -1,40 +1,47 @@
-#' A function to calculate a sample's diversity
+#' Calculate diversity indices for a sample
 #'
-#' Here, we compute the input's barcode diversity.
-#' This file contains multiple functions. The main function is: calculate_diversity()
-#' and it uses format_sample(), calculate_q_0(), calculate_q_1() and calculate_q_inf().
-#' While calculate_q_0(), calculate_q_1() and calculate_q_inf() compute the diversity
-#' index for different q-values, calculate_diversity() binds the indices together.
+#' This is the main function to compute barcode diversity indices for a given sample.
+#' It calculates three common diversity measures: species richness (q = 0),
+#' Shannon diversity (q = 1), and dominance-based diversity (q = infinity).
 #'
+#' Internally, the function calls:
+#' - format_sample() to reshape the data
+#' - calculate_q_0(), calculate_q_1(), and calculate_q_inf() to compute each diversity index
+#'
+#' @param input_data A data frame with columns ID, Time, and Reads.
+#'   Represents barcode counts per lineage at each time point.
+#'
+#' @return A data frame containing three diversity indices over time:
+#'   q_0 (richness), q_1 (Shannon), and q_inf (dominance).
+#' @export
 #' @name calculateDiversity
-#' @param input_data input dataframe given by user
-#' @param sample input dataframe given by user
-#' @param mat matrix containing the number of barcodes (READS) for each ID over each time-point
-#' @return A dataframe containing all diversity indices for a sample.
-#' @export calculate_diversity
 
-
-## GENERATE DIVERSITY DATAFRAME FOR ONE SIMULATION
-calculate_diversity <- function(input_data){
-
-  generations = format_sample(input_data)
-  m = as.matrix(generations[,-1])
-
-  mat = as.data.frame(sweep(m,2,colSums(m,na.rm = TRUE),`/`))
-
-  mat$ID = generations$X1
-
-
-  q0 = calculate_q_0(mat)
-  q1 = calculate_q_1(mat)
-  qinf = calculate_q_inf(mat)
-  qall = cbind(q0,q1,qinf)
-  qall$Generations = as.double(row.names(qall))
+calculate_diversity <- function(input_data) {
+  generations <- format_sample(input_data)
+  m <- as.matrix(generations[, -1])
+  mat <- as.data.frame(sweep(m, 2, colSums(m, na.rm = TRUE), `/`))  # Normalize by column sums
+  mat$ID <- generations$X1
+  
+  q0 <- calculate_q_0(mat)
+  q1 <- calculate_q_1(mat)
+  qinf <- calculate_q_inf(mat)
+  
+  qall <- cbind(q0, q1, qinf)
+  qall$Generations <- as.double(row.names(qall))
   return(qall)
 }
 
 
+
 #################
+#' Format input data for diversity calculation
+#'
+#' Reshapes a long-format data frame into wide format, with lineage IDs as rows
+#' and time points as columns. Replaces missing values with zeros.
+#'
+#' @param sample A data frame with columns ID, Time, and Reads.
+#'
+#' @return A wide-format data frame suitable for diversity calculations.
 #' @export
 #' @rdname calculateDiversity
 
@@ -46,8 +53,13 @@ format_sample <- function(sample){
 }
 
 #################
-
-## CALCULATE DIVERSITY (q = 0): number of lineages with nonzero frequency (species richness)
+#' Compute species richness (q = 0)
+#'
+#' Calculates the number of lineages with nonzero frequency at each time point.
+#'
+#' @param mat A matrix of relative abundances, with IDs as rows and time points as columns.
+#'
+#' @return A data frame with one column: q_0.
 #' @export
 #' @rdname calculateDiversity
 
@@ -62,8 +74,14 @@ calculate_q_0 <- function(mat) {
 }
 
 #################
-
-## CALCULATE DIVERSITY (q = 1): Shannon diversity - all lineages weighted by their frequencies
+#' Compute Shannon diversity (q = 1)
+#'
+#' Calculates the Shannon entropy at each time point and returns its exponential form.
+#' This measure considers both the number and evenness of lineages.
+#'
+#' @param mat A matrix of relative abundances, with IDs as rows and time points as columns.
+#'
+#' @return A data frame with one column: q_1.
 #' @export
 #' @rdname calculateDiversity
 
@@ -77,9 +95,14 @@ calculate_q_1 <- function(mat) {
 }
 
 #################
-
-## CALCULATE DIVERSITY (q = infinity): reciprocal of the maximum lineage frequency
-## (entropy) gives information about the contribution of the most abundant lineage on diversity
+#' Compute dominance-based diversity (q = infinity)
+#'
+#' Calculates the reciprocal of the most abundant lineage's frequency at each time point.
+#' This measure reflects the dominance of the most frequent lineage.
+#'
+#' @param mat A matrix of relative abundances, with IDs as rows and time points as columns.
+#'
+#' @return A data frame with one column: q_inf.
 #' @export
 #' @rdname calculateDiversity
 
