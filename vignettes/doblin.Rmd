@@ -108,7 +108,7 @@ Once the barcodes have been extracted, it is primordial to format the data as fo
 2. Change the current working directory to the location where you want to clone the *Doblin* repository.
 3. Type `git clone`, and then paste *Doblin*'s URL.
 
-    `git clone https://github.com/dagagf/doblin`
+    `git clone https://github.com/DavidGagneLeroux/doblin`
 
 4. Press **Enter** to create your local clone.
 5. In Terminal, set your working directory to the `doblin/` folder.
