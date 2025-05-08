@@ -30,7 +30,7 @@ if(length(new.packages)){
 }
 
 if (!"doblin" %in% installed.packages()[, "Package"]) {
-  devtools::install_github("dagagf/doblin")
+  devtools::install_github("DavidGagneLeroux/doblin")
 }
 
 # Check if it matches your repository name
