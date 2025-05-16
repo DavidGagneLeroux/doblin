@@ -62,3 +62,11 @@ Internally, the function calls:
 \item calculate_q_0(), calculate_q_1(), and calculate_q_inf() to compute each diversity index
 }
 }
+\examples{
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Calculate diversity indices over time
+diversity_df <- calculate_diversity(input_dataframe)
+}

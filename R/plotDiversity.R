@@ -4,13 +4,32 @@
 #' A multi-panel EPS figure is saved, showing one panel per diversity order.
 #'
 #' @param dataframe A data frame containing barcode diversities with columns for generations and diversity metrics.
+#' @param output_directory A string specifying the directory where plots will be saved.
+#' @param input_name A string used as the base name for output files (e.g., "replicate1").
 #'
 #' @return A faceted ggplot object (invisible). The function also saves the figure to an EPS file.
 #' @import ggplot2
 #' @export
 #' @name plotDiversity
+#' 
+#' @examples
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Calculate diversity indices over time
+#' diversity_df <- calculate_diversity(input_dataframe)
+#' 
+#' # Plot and save diversity figure
+#' plotDiversity(
+#'   dataframe = diversity_df,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
 
-plotDiversity <- function(dataframe) {
+plotDiversity <- function(dataframe,
+                          output_directory,
+                          input_name) {
 
   df <- reshape2::melt(
     dataframe,
@@ -40,7 +59,7 @@ plotDiversity <- function(dataframe) {
     coord_cartesian(expand = TRUE)
   
   ggsave(
-    filename = paste0(output_directory, input_name, "_diversity.eps"),
+    filename = paste0(output_directory, "/", input_name, "_diversity.eps"),
     plot = p,
     width = 8.25,
     height = 6

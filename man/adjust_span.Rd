@@ -30,3 +30,11 @@ This approach avoids requiring the user to manually tune the span, instead
 adapting to the data distribution and scale. The fit is performed on the
 log-transformed y values to reduce skewness and avoid numerical instability.
 }
+\examples{
+set.seed(123)
+x <- seq(0, 10, length.out = 100)
+y <- abs(sin(x)) + rnorm(100, sd = 0.1)
+
+# Fit using recursive span adjustment
+fit <- adjust_span(x, y, span = 0.2)
+}

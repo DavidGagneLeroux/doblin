@@ -7,12 +7,60 @@
 #'
 #' @name plotHCQuantification
 #' @param clusters_filtered A data frame output from `filterHC()`, containing barcode frequencies with cluster labels across time points.
+#' @param output_directory A string specifying the directory where plots will be saved.
+#' @param input_name A string used as the base name for output files (e.g., "replicate1").
+#' 
 #' @import dplyr
 #' @import ggplot2
-#' @export 
+#' @return No return value. This function saves a plot and a CSV file containing the smallest inter-cluster distances per threshold.
+#' @export
+#'  
+#' @examples
+#' \donttest{ 
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Filter data to retain dominant and persistent barcodes
+#' filtered_df <- filterData(
+#'   input_df = input_dataframe,
+#'   freq_threshold = 0.00005,
+#'   time_threshold = 5,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#'
+#' # Perform hierarchical clustering using Pearson correlation
+#' # Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
+#' cluster_assignments <- performHClustering(
+#'   filtered_data = filtered_df,
+#'   agglomeration_method = "average",
+#'   similarity_metric = "pearson",
+#'   missing_values = "pairwise.complete.obs",
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#' 
+#' # Filter clusters to retain only those with at least 8 members,
+#' # unless they contain a dominant lineage
+#' # (this step prompts the user for an average frequency threshold)
+#' filtered_clusters <- filterHC(
+#'   series_filtered = filtered_df,
+#'   clusters = cluster_assignments,
+#'   n_members = 8
+#' )
+#'
+#' # Quantify and visualize clustering quality across thresholds
+#' plotHCQuantification(
+#'   clusters_filtered = filtered_clusters,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#' }
 
-
-plotHCQuantification <- function(clusters_filtered){
+plotHCQuantification <- function(clusters_filtered,
+                                 output_directory,
+                                 input_name){
 
   clusters_dataframe = applyLOESS(clusters_filtered)
 
@@ -41,7 +89,7 @@ plotHCQuantification <- function(clusters_filtered){
     dplyr::mutate(cluster=max(cluster),id=paste(iso1,iso2 ,sep="_")) %>%
     dplyr::summarise(dist_small=min(dist),cluster=max(cluster))
 
-  readr::write_csv(smallest_distance,file = paste(output_directory, input_name, "_threshold_selection.csv",sep=""),col_names = TRUE)
+  readr::write_csv(smallest_distance,file = paste(output_directory, "/", input_name, "_threshold_selection.csv",sep=""),col_names = TRUE)
 
   rm(distance_pairwise)
 
@@ -55,7 +103,7 @@ plotHCQuantification <- function(clusters_filtered){
 
   tryCatch(
     {
-      ggsave(choose_threshold,filename =  paste(output_directory,input_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
+      ggsave(choose_threshold,filename =  paste(output_directory, "/", input_name, "_threshold_selection", ".eps",sep=""),width = 9,height = 8)
     },
     error = function(e) {
       if(grepl("Transformation for secondary axes must be monotonic", e$message)) {

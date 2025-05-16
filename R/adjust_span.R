@@ -19,6 +19,14 @@
 #' @return A fitted loess object if a valid fit is achieved.
 #' @export
 #' @name adjust_span
+#' 
+#' @examples 
+#' set.seed(123)
+#' x <- seq(0, 10, length.out = 100)
+#' y <- abs(sin(x)) + rnorm(100, sd = 0.1)
+#'
+#' # Fit using recursive span adjustment
+#' fit <- adjust_span(x, y, span = 0.2)
 
 adjust_span <- function(x, y, span) {
   # Check for NaN or Inf values in x and y

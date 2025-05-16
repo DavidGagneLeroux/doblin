@@ -23,3 +23,31 @@ that contain at least \code{n_members} unique lineages. To avoid excluding poten
 the user is prompted to specify a minimum average frequency. Any small clusters with at least one lineage
 exceeding this frequency threshold will be retained.
 }
+\examples{
+\donttest{ 
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Filter data to retain dominant and persistent barcodes
+filtered_df <- filterData(
+  input_df = input_dataframe,
+  freq_threshold = 0.00005,
+  time_threshold = 5,
+  output_directory = tempdir(),
+  input_name = "demo"
+)
+
+# Perform hierarchical clustering using Pearson correlation
+# Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
+
+# Filter clusters to retain only those with at least 8 members,
+#         unless they contain a dominant lineage
+#         (this step prompts the user for an average frequency threshold)
+filtered_clusters <- filterHC(
+  series_filtered = filtered_df,
+  clusters = cluster_assignments,
+  n_members = 8
+)
+}
+}

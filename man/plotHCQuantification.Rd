@@ -6,7 +6,7 @@
 \alias{applyLOESS}
 \title{Quantify and Visualize Hierarchical Clustering Results}
 \usage{
-plotHCQuantification(clusters_filtered)
+plotHCQuantification(clusters_filtered, output_directory, input_name)
 
 melt_dist(dist, order = NULL, dist_name = "dist")
 
@@ -14,6 +14,10 @@ applyLOESS(clusters_filtered)
 }
 \arguments{
 \item{clusters_filtered}{A data frame filtered by \code{filterHC()}, containing \code{cluster}, \code{cutoff}, \code{Time}, and \code{Frequency} columns.}
+
+\item{output_directory}{A string specifying the directory where plots will be saved.}
+
+\item{input_name}{A string used as the base name for output files (e.g., "replicate1").}
 
 \item{dist}{A distance matrix (typically a result of a distance computation).}
 
@@ -24,6 +28,8 @@ to rearrange the matrix before melting.}
 Default is "dist".}
 }
 \value{
+No return value. This function saves a plot and a CSV file containing the smallest inter-cluster distances per threshold.
+
 A data frame with columns: \code{iso1}, \code{iso2}, and the specified distance column.
 
 A data frame with smoothed values for each cluster and time point: columns include \code{cluster}, \code{cutoff}, \code{model}, and \code{time}.
@@ -42,4 +48,47 @@ further analysis.
 Applies LOESS smoothing to barcode frequencies within each cluster over time,
 using only the persistent barcodes (those present at the last time point).
 Clusters are re-ranked within each threshold based on their average final frequency.
+}
+\examples{
+\donttest{ 
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Filter data to retain dominant and persistent barcodes
+filtered_df <- filterData(
+  input_df = input_dataframe,
+  freq_threshold = 0.00005,
+  time_threshold = 5,
+  output_directory = tempdir(),
+  input_name = "demo"
+)
+
+# Perform hierarchical clustering using Pearson correlation
+# Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
+cluster_assignments <- performHClustering(
+  filtered_data = filtered_df,
+  agglomeration_method = "average",
+  similarity_metric = "pearson",
+  missing_values = "pairwise.complete.obs",
+  output_directory = tempdir(),
+  input_name = "demo"
+)
+
+# Filter clusters to retain only those with at least 8 members,
+# unless they contain a dominant lineage
+# (this step prompts the user for an average frequency threshold)
+filtered_clusters <- filterHC(
+  series_filtered = filtered_df,
+  clusters = cluster_assignments,
+  n_members = 8
+)
+
+# Quantify and visualize clustering quality across thresholds
+plotHCQuantification(
+  clusters_filtered = filtered_clusters,
+  output_directory = tempdir(),
+  input_name = "demo"
+)
+}
 }

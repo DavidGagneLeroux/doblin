@@ -15,6 +15,14 @@
 #'   q_0 (richness), q_1 (Shannon), and q_inf (dominance).
 #' @export
 #' @name calculateDiversity
+#' 
+#' @examples
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Calculate diversity indices over time
+#' diversity_df <- calculate_diversity(input_dataframe)
 
 calculate_diversity <- function(input_data) {
   generations <- format_sample(input_data)

@@ -14,6 +14,17 @@
 #' 
 #' @export
 #' @name fetchTop
+#' 
+#' @examples
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Reshape & sort the data
+#' reshaped_df <- reshapeData(input_dataframe)
+#'
+#' # Fetch the top 10 most abundant barcodes
+#' top_barcodes <- fetchTop(reshaped_df, N_LINEAGES = 10)
 
 fetchTop <- function(reshaped_df, N_LINEAGES) {
   

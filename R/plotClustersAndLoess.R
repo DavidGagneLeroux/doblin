@@ -9,12 +9,60 @@
 #' @name plotClustersAndLoess
 #' @param selected_clusters  A dataframe containing the clusters from a hierarchical clustering
 #'  for a specific threshold
+#' @param output_directory A string specifying the directory where plots will be saved.
+#' @param input_name A string used as the base name for output files (e.g., "replicate1").
+#' 
 #' @import dplyr
 #' @import ggplot2
+#' @return No return value. This function saves plots and CSV files related to barcode cluster dynamics.
 #' @export 
+#' 
+#' @examples
+#' \donttest{
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Filter data to retain dominant and persistent barcodes
+#' filtered_df <- filterData(
+#'   input_df = input_dataframe,
+#'   freq_threshold = 0.00005,
+#'   time_threshold = 5,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#'
+#' # Perform hierarchical clustering using Pearson correlation
+#' cluster_assignments <- performHClustering(
+#'   filtered_data = filtered_df,
+#'   agglomeration_method = "average",
+#'   similarity_metric = "pearson",
+#'   missing_values = "pairwise.complete.obs",
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#'
+#' # Filter clusters to retain only those with at least 8 members,
+#' # unless they contain a dominant lineage
+#' filtered_clusters <- filterHC(
+#'   series_filtered = filtered_df,
+#'   clusters = cluster_assignments,
+#'   n_members = 8
+#' )
+#'
+#'
+#' # Plot log10-transformed barcode frequencies and smoothed LOESS average per cluster
+#' plotClustersAndLoess(
+#'   selected_clusters = filtered_clusters,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#' }
 
 
-plotClustersAndLoess <- function(selected_clusters){
+plotClustersAndLoess <- function(selected_clusters,
+                                 output_directory,
+                                 input_name){
 
 #######################################################################
 # Clusters are ordered according to two criteria:
@@ -68,16 +116,16 @@ plotClustersAndLoess <- function(selected_clusters){
   colnames(clustered_series)[3] = "time"
 
   ## Write clustered_series
-  readr::write_csv(clustered_series,file = paste(output_directory, input_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
+  readr::write_csv(clustered_series,file = paste(output_directory, "/", input_name, "_clustered_series_log10.csv",sep=""),col_names = TRUE)
 
-  clusters_dataframe = apply_LOESS(clustered_series)
+  clusters_dataframe = apply_LOESS(clustered_series, output_directory, input_name)
   ## loess
   clusters_dataframe$cluster=paste("C",clusters_dataframe$cluster,sep="")
   clusters_dataframe$time=clusters_dataframe$time*10
   clusters.loess <- tidyr::spread(clusters_dataframe, cluster, value)
 
   # csv of loess plot
-  readr::write_csv(clusters_dataframe,file=paste0(output_directory, input_name, "_loess_clusters.csv"),col_names = TRUE)
+  readr::write_csv(clusters_dataframe,file=paste0(output_directory, "/", input_name, "_loess_clusters.csv"),col_names = TRUE)
   # plot loess
   effective.breaks <- sort(c(unique(clustered_series$time)))
   effective.labels = as.character(effective.breaks)
@@ -88,11 +136,11 @@ plotClustersAndLoess <- function(selected_clusters){
   loess.plot = ggplot(clusters_dataframe) + geom_line(aes(x=time/10,y=10^(value),group=cluster,color=cluster),size=1) + scale_x_continuous(limits = effective.limits) +
     theme_Publication() + scale_color_manual(values = cluster.colors,name="cluster") + ylab("Clone frequency") + xlab("Time") +
     scale_y_log10(limits=c(min(10^clusters_dataframe$value)+1e-7,1e0))+ coord_cartesian(expand = FALSE)
-  ggsave(loess.plot,filename = paste(output_directory, input_name, "_loess_clusters_log10.eps", sep=""),width = 8.25,height = 6)
+  ggsave(loess.plot,filename = paste(output_directory, "/", input_name, "_loess_clusters_log10.eps", sep=""),width = 8.25,height = 6)
 
   # write loess file
-  readr::write_csv(clusters.loess,file = paste(output_directory, input_name, "_clustered_loess_log10.csv",sep=""),col_names = TRUE)
-  print("DONE")
+  readr::write_csv(clusters.loess,file = paste(output_directory, "/", input_name, "_clustered_loess_log10.csv",sep=""),col_names = TRUE)
+  message("DONE")
 
 }
 
@@ -101,17 +149,18 @@ plotClustersAndLoess <- function(selected_clusters){
 #'
 #' Plots all barcodes in a cluster on a log10 y-scale, along with the LOESS-smoothed average trajectory.
 #'
+#' @inheritParams plotClustersAndLoess
 #' @name plotClusterLog10
 #' @param df A dataframe containing barcode frequencies in a single cluster.
 #' @param cluster The cluster ID (numeric or character).
 #' @param color A color code to use for the cluster.
 #' @param tf A dataframe containing the LOESS-smoothed trajectory for the cluster.
 #' @param effective.breaks A vector of time points used as breaks on the x-axis.
-#' @return A ggplot object.
+#' @return A ggplot object showing the log10-transformed barcode frequencies and the LOESS-smoothed average trajectory for a single cluster.
 #' @export
 
 # plot clusters
-plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
+plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks, output_directory, input_name){
 
   effective.labels = as.character(effective.breaks)
   effective.limits = c(min(effective.breaks), max(effective.breaks))
@@ -128,7 +177,7 @@ plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
   # graphics::plot(p)
   # grDevices::dev.off()
 
-  ggsave(p,filename =  paste(output_directory, input_name, "_cluster", cluster, "_log10.eps", sep=""),width = 5.5,height = 4)
+  ggsave(p,filename =  paste(output_directory, "/", input_name, "_cluster", cluster, "_log10.eps", sep=""),width = 5.5,height = 4)
 
   return(p)
 }
@@ -136,12 +185,13 @@ plotClusterLog10 <- function(df,cluster,color,tf, effective.breaks){
 #################
 #' Apply LOESS smoothing to barcode trajectories
 #'
+#' @inheritParams plotClustersAndLoess
 #' @name apply_LOESS
 #' @param c_series A dataframe containing `time`, `frequency`, and `cluster` columns.
-#' @return A dataframe with LOESS-smoothed values.
+#' @return A dataframe containing the LOESS-smoothed trajectories for each cluster, with columns `cluster`, `value`, and `time`.
 #' @export
 
-apply_LOESS <- function(c_series){
+apply_LOESS <- function(c_series, output_directory, input_name){
 
   max.range = max(c_series$time)-min(c_series$time)
   loess.range = (max.range*10)+1
@@ -159,7 +209,7 @@ apply_LOESS <- function(c_series){
   effective.breaks = sort(c(unique(c_series$time)))
 
   for(i in seq_along(unique(c_series$cluster))){
-    l = plotClusterLog10(c_series[c_series$cluster==i,], i, cluster.colors[i], cluster.df[cluster.df$cluster==i,], effective.breaks)
+    l = plotClusterLog10(c_series[c_series$cluster==i,], i, cluster.colors[i], cluster.df[cluster.df$cluster==i,], effective.breaks, output_directory, input_name)
     plotList[[i]]=l
 
   }

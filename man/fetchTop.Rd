@@ -22,3 +22,14 @@ as returned by \code{reshapeData()}. The top barcodes are assumed to be located 
 first \code{N_LINEAGES} rows of the reshaped dataframe. This implies that \code{reshaped_df}
 should already be sorted by descending maximum frequency for correct behavior.
 }
+\examples{
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Reshape & sort the data
+reshaped_df <- reshapeData(input_dataframe)
+
+# Fetch the top 10 most abundant barcodes
+top_barcodes <- fetchTop(reshaped_df, N_LINEAGES = 10)
+}

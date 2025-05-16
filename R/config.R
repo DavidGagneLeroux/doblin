@@ -89,9 +89,9 @@ theme_Matrix <- function(base_size=24, base_family="Arial") {
 
 
 utils::globalVariables(c(
-  "output_directory", "input_name", "ID", "pipeline_choice","mean_freq",
+  "ID", "pipeline_choice","mean_freq",
   "cumulative_freq", "value", "cluster", "time", "frequency", "Generations",
-  "q_value", "q_type", "hex", "LONG_COLOR_LIST_RAND", ".", "iso1", "iso2",
+  "q_value", "q_type", "hex", ".", "iso1", "iso2",
   "dist", "dist_small", "cutoff", "Frequency", "average", "Time"
 ))
 

@@ -22,3 +22,12 @@ for each barcode (ID), including maximum, initial, final, and average frequencie
 This function expects a data frame with three columns: \code{ID}, \code{Time}, and \code{Reads}.
 Frequencies are computed by normalizing the \code{Reads} across all barcodes for each time point.
 }
+\examples{
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Reshape data to long-format with normalized frequencies +
+# sort data by descending maximum frequency
+reshaped_df <- reshapeData(input_dataframe)
+}

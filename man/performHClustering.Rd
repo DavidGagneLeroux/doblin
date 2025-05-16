@@ -8,7 +8,9 @@ performHClustering(
   filtered_data,
   agglomeration_method,
   similarity_metric,
-  missing_values = NULL
+  missing_values = NULL,
+  output_directory,
+  input_name
 )
 }
 \arguments{
@@ -19,6 +21,10 @@ performHClustering(
 \item{similarity_metric}{A character string specifying the similarity metric (\code{"pearson"} or \code{"dtw"}).}
 
 \item{missing_values}{A character string specifying how missing values should be handled in Pearson correlation (e.g., \code{"pairwise.complete.obs"}).}
+
+\item{output_directory}{A string specifying the directory where plots will be saved.}
+
+\item{input_name}{A string used as the base name for output files (e.g., "replicate1").}
 }
 \value{
 A data frame with clustering assignments at multiple thresholds (columns named by height).
@@ -29,4 +35,29 @@ A distance matrix is computed using either Pearson correlation or Dynamic Time W
 and hierarchical clustering is applied using a specified agglomeration method.
 A dendrogram and heatmap are generated for visual inspection. If no threshold is specified,
 clusters are computed for all possible thresholds between 0.1 and the maximum tree height.
+}
+\examples{
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Filter data to retain dominant and persistent barcodes
+filtered_df <- filterData(
+  input_df = input_dataframe,
+  freq_threshold = 0.00005,
+  time_threshold = 5,
+  output_directory = tempdir(),
+  input_name = "demo"
+)
+
+# Perform hierarchical clustering using Pearson correlation
+# Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
+cluster_assignments <- performHClustering(
+  filtered_data = filtered_df,
+  agglomeration_method = "average",
+  similarity_metric = "pearson",
+  missing_values = "pairwise.complete.obs",
+  output_directory = tempdir(),
+  input_name = "demo"
+)
 }

@@ -4,7 +4,7 @@
 ## usage example: Rscript ./main.R -t 0.0005 -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] -c 14
 
 ## -t: Minimum frequency above which barcodes are assigned colors [default: 0.0005]. This argument is used in plotDynamics().
-## -o: Output directory [default: current working directory].
+## -o: Output directory [default: temporary directory].
 ## -n: Input file name.
 ## -i: Input file.
 ## -c: Time point threshold. We cluster the lineages that persist for at least '-c' time points).
@@ -14,30 +14,20 @@
 ## Time: integer representing the time at which the data was measured.
 ## Reads: number of barcodes counted at a given time for a given consensus sequence.
 
-
-options(repos = c(CRAN = "https://cran.rstudio.com/")) # CRAN mirror
-
-## Install missing packages
-list.of.packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnewscale",
+## List of required packages
+required_packages <- c("grid", "ggthemes", "ggplot2", "magrittr", "dplyr", "ggnewscale",
                       "readr", "data.table", "reshape2", "grDevices", "devtools",
                       "optparse", "egg", "ggpubr", "stats", "imputeTS", "data.table", "dtwclust",
                       "purrr", "tidyr", "TSdist", "entropy", "gplots", "lazyeval", "pryr", "utils", "doblin")
 
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+# Check for missing packages and stop with a message
+missing_pkgs <- required_packages[!sapply(required_packages, requireNamespace, quietly = TRUE)]
 
-if(length(new.packages)){
-  install.packages(new.packages)
+if (length(missing_pkgs) > 0) {
+  stop("The following required packages are missing: ",
+       paste(missing_pkgs, collapse = ", "),
+       ".\nPlease install them before running this demo.")
 }
-
-if (!"doblin" %in% installed.packages()[, "Package"]) {
-  devtools::install_github("DavidGagneLeroux/doblin")
-}
-
-# Check if it matches your repository name
-if (basename(getwd()) != "doblin") {
-  stop("Make sure to be in the 'doblin' repository.")
-}
-
 
 library(doblin)
 library(optparse)
@@ -49,30 +39,30 @@ if (interactive()){
   library(magrittr)
   library(ggpubr)
 
-  output_directory <- readline(prompt = "Please enter an output directory [default: <current_dir>]: ")
+  output_directory <- readline(prompt = "Please enter an output directory [default: <temp_dir>]: ")
   if (nchar(output_directory) == 0) {
-    output_directory <- getwd()
+    output_directory <- tempdir()
   }
-  print(paste("Provided output directory:", output_directory))
+  message(paste("Provided output directory:", output_directory))
 
   input_name <- readline(prompt = "Please enter an input name [default: MyData]: ")
   if (nchar(input_name) == 0) {
     input_name <- "MyData"
   }
-  print(paste("Provided input name:", input_name))
+  message(paste("Provided input name:", input_name))
 
   input_file <- readline(prompt = "Please enter the input file (ex: ~/usr/repository/file_name.csv): ")
   if (nchar(input_file) == 0) {
     stop("No input file provided.")
   }
-  print(paste("Provided input file:", input_file))
+  message(paste("Provided input file:", input_file))
 
 }else{
 
   ## Parse arguments from command line
   options <- list(
     make_option(c("-t", "--threshold"), action = "store", type="double", default=0.0005, help="Minimum frequency above which barcodes are assigned colors [default %default]"),
-    make_option(c("-o", "--outputPath"), action = "store", type="character", default=getwd(), help="Output directory [default %default]"),
+    make_option(c("-o", "--outputPath"), action = "store", type="character", default=tempdir(), help="Output directory [default %default]"),
     make_option(c("-n", "--inputName"), action = "store", type="character", help="Input name"),
     make_option(c("-i", "--inputFile"), action = "store", type="character", help="Input csv file"),
     make_option(c("-c", "--timeCut"), action = "store", type="integer", help="Minimum duration, in terms of time points, for which lineages must persist to be eligible for clustering")
@@ -84,7 +74,7 @@ if (interactive()){
     stop("Missing arguments. Arguments must be supplied!", call.=FALSE)
   }
 
-  print("Processing the command line...")
+  message("Processing the command line...")
 
   min_freq_threshold= as.double(arguments$threshold)
   output_directory = arguments$outputPath
@@ -93,14 +83,14 @@ if (interactive()){
   time_threshold = as.numeric(arguments$timeCut)
 
   # Saving cmd line
-  sink(paste(output_directory,"cmd_line.txt"), append = TRUE)
+  sink(paste0(output_directory, "/","cmd_line.txt"))
   cat("Command line inputs:\n")
   cat(commandArgs(trailingOnly = TRUE))
   sink()
 
 }
 
-print("Step 0: Processing CSV file...")
+message("Step 0: Processing CSV file...")
 input_dataframe <- readr::read_csv(input_file, show_col_types = FALSE)
 
 ## Non-interactive mode:
@@ -155,26 +145,29 @@ if (plot_choice == "yes"){
     if (nchar(min_freq_threshold) == 0) {
       min_freq_threshold <- 0.0005
     }
-    print(paste("Provided minimum frequency:", min_freq_threshold))
+    message(paste("Provided minimum frequency:", min_freq_threshold))
   }
 
-  print("Step 1: Plotting the dynamics...")
-  print("1.1 Reshaping input file into long-format dataframe...")
+  message("Step 1: Plotting the dynamics...")
+  message("1.1 Reshaping input file into long-format dataframe...")
   reshaped_dataframe <- reshapeData(input_dataframe)
 
   ## Step 1.2:
   N_LINEAGES = 50
-  print(paste("1.2 Retrieving the first",N_LINEAGES,"barcodes with the highest maximum frequencies..."))
+  message(paste("1.2 Retrieving the first",N_LINEAGES,"barcodes with the highest maximum frequencies..."))
   top_N_maxFreq <- fetchTop(reshaped_dataframe, N_LINEAGES)
 
   ## Step 1.3:
-  print(paste("1.3 Assigning colors to lineages having reached the minimum frequency threshold among the",N_LINEAGES,"most dominant barcoded lines..."))
+  message(paste("1.3 Assigning colors to lineages having reached the minimum frequency threshold among the",N_LINEAGES,"most dominant barcoded lines..."))
 
   ## All barcodes with (maximum frequency >= minimum frequency threshold) are assigned a hex color
   colored_top_freq <- top_N_maxFreq[top_N_maxFreq$max >= min_freq_threshold, ]
 
   ## we create a very long list of colors for low-frequency barcodes.
-  COLOR_LIST <- readr::read_csv("./inst/extdata/top_colors2.csv", show_col_types = FALSE)
+  COLOR_LIST <- readr::read_csv(
+    system.file("extdata", "top_colors2.csv", package = "doblin"),
+    show_col_types = FALSE
+  )
   LONG_COLOR_LIST_RAND = sample(rep(COLOR_LIST$hex,50)) # for dynamics (linear-scale plot)...
 
   COLOR_LIST = COLOR_LIST[1:length(colored_top_freq[[1]]),]
@@ -190,8 +183,13 @@ if (plot_choice == "yes"){
   plot_model <- match.arg(plot_model, c("linear", "logarithmic", "both"))
 
 
-  print("Plotting in progress...")
-  plotDynamics(reshaped_dataframe, colored_top_freq, min_freq_threshold, plot_model)
+  message("Plotting in progress...")
+  plotDynamics(reshaped_dataframe,
+               colored_top_freq,
+               min_freq_threshold,
+               plot_model,
+               output_directory,
+               input_name)
 
 }
 
@@ -206,17 +204,19 @@ diversity_choice <- match.arg(diversity_choice, c("yes", "no"))
 
 if (diversity_choice == "yes"){
 
-  print("2.1 Calculating the diversity...")
+  message("2.1 Calculating the diversity...")
   diversity <- calculate_diversity(input_dataframe)
 
-  print("2.2 Plotting the diversity...")
-  plotDiversity(diversity)
+  message("2.2 Plotting the diversity...")
+  plotDiversity(diversity,
+                output_directory,
+                input_name)
 }
 
 ####################################################
 
 ## Step 3:
-print("Step 3: Clustering...")
+message("Step 3: Clustering...")
 
 if (interactive()) {
   freq_filter_threshold <- as.numeric(readline(prompt = "Specify a minimum mean frequency below which lineages are not taken into account during clustering (ex: 0.00005): "))
@@ -226,15 +226,19 @@ if (interactive()) {
   freq_filter_threshold <- as.numeric(readLines("stdin", n=1))
 }
 
-print("3.1 Filtering the input data...")
+message("3.1 Filtering the input data...")
 
 
-filtered_df <- filterData(input_dataframe, freq_filter_threshold, time_threshold)
+filtered_df <- filterData(input_dataframe,
+                          freq_filter_threshold,
+                          time_threshold,
+                          output_directory,
+                          input_name)
 
 
 ## 3.2: Clustering with Pearson & DTW + threshold selection depending on distance
 ## between clusters & cluster number
-print("3.2 Clustering the filtered data...")
+message("3.2 Clustering the filtered data...")
 
 if (interactive()) {
   agglomeration <- readline(prompt="Enter an agglomeration method. Please refer to stats::hclust() R documentation (ex: average) : ")
@@ -263,11 +267,16 @@ if (similarity_metric == "pearson") {
   missing_values = NULL
 }
 
-print("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
+message("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
 
-clusters_df = performHClustering(filtered_df, agglomeration, similarity_metric, missing_values)
+clusters_df = performHClustering(filtered_df,
+                                 agglomeration,
+                                 similarity_metric,
+                                 missing_values,
+                                 output_directory,
+                                 input_name)
 
-print("3.2.2 Filtering the hierarchical clustering results...")
+message("3.2.2 Filtering the hierarchical clustering results...")
 
 if (interactive()) {
   min_members <- as.numeric(readline(prompt = paste("Enter the minimum number of members per cluster for", input_name, ": ")))
@@ -280,9 +289,11 @@ if (interactive()) {
 clusters_filtered = filterHC(filtered_df, clusters_df, min_members)
 
 
-print("3.2.3 Quantifying the hierarchical clustering...")
+message("3.2.3 Quantifying the hierarchical clustering...")
 
-plotHCQuantification(clusters_filtered)
+plotHCQuantification(clusters_filtered,
+                     output_directory,
+                     input_name)
 
 
 if (interactive()) {
@@ -294,6 +305,8 @@ if (interactive()) {
 
 selected_clusters = clusters_filtered[clusters_filtered$cutoff == selected_threshold, ]
 
-print("3.2.5 Plotting the resulting clusters...")
+message("3.2.5 Plotting the resulting clusters...")
 
-plotClustersAndLoess(selected_clusters)
+plotClustersAndLoess(selected_clusters,
+                     output_directory,
+                     input_name)

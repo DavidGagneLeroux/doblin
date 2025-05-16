@@ -7,16 +7,53 @@
 #' @param colored_topFreq_df A dataframe with top barcodes and their assigned color hex codes and max frequencies.
 #' @param min_freq_threshold A numeric threshold; barcodes with max frequency below this are colored gray.
 #' @param plot_model One of `"linear"`, `"logarithmic"`, or `"both"` to specify the plot type(s).
+#' @param output_directory A string specifying the directory where plots will be saved.
+#' @param input_name A string used as the base name for output files (e.g., "replicate1").
 #'
 #' @import ggplot2
 #' @importFrom ggnewscale new_scale_fill
 #' @importFrom magrittr %>%
 #' @importFrom dplyr group_by filter ungroup
+#' @return No return value. Depending on the `plot_model` parameter:
+#' - Saves a linear-scale area plot (`_area.jpg`) showing the dynamics of barcode frequencies over time.
+#' - Saves a logarithmic-scale line plot (`_line.eps`) highlighting prominent barcodes across time.
 #' @export
 #' @name plotDynamics
+#' 
+#' @examples
+#' \donttest{
+#' # Load demo barcode count data
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Reshape and extract top lineages
+#' reshaped_df <- reshapeData(input_dataframe)
+#' top_barcodes <- fetchTop(reshaped_df, N_LINEAGES = 10)
+#'
+#' # Load color list and assign hex codes
+#' color_file <- system.file("extdata", "top_colors2.csv", package = "doblin")
+#' color_df <- readr::read_csv(color_file, show_col_types = FALSE)
+#' color_df <- color_df[1:nrow(top_barcodes), ]
+#' colored_top <- cbind(top_barcodes, color_df)
+#'
+#' # Plot dynamics
+#' plotDynamics(
+#'   reshaped_df = reshaped_df,
+#'   colored_topFreq_df = colored_top,
+#'   min_freq_threshold = 0.001,
+#'   plot_model = "both",
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#' }
 
 
-plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, plot_model) {
+plotDynamics <- function(reshaped_df, 
+                         colored_topFreq_df, 
+                         min_freq_threshold, 
+                         plot_model,
+                         output_directory,
+                         input_name) {
 
   # Drop unused column
   colored_topFreq_df$max <- NULL
@@ -52,9 +89,6 @@ plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, pl
     message("Rendering linear-scale area plot. This may take a few minutes...")
     
     g <- ggplot(colored_df) +
-      geom_area(aes(x = Time, y = Frequency, group = ID, fill = ID)) +
-      scale_fill_manual(values = LONG_COLOR_LIST_RAND, guide = "none") +
-      ggnewscale::new_scale_fill() +
       geom_area(data = grouped_df, aes(x = Time, y = Frequency, group = ID, fill = ID)) +
       scale_fill_manual(values = mycolors, name = "Cluster ID", guide = "none") +
       scale_x_continuous(limits = range(x_breaks)) +
@@ -63,7 +97,7 @@ plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, pl
       coord_cartesian(expand = FALSE)
     
     ggsave(
-      filename = paste0(output_directory, input_name, "_area.jpg"),
+      filename = paste0(output_directory, "/", input_name, "_area.jpg"),
       plot = g,
       width = 8.25,
       height = 6,
@@ -74,7 +108,7 @@ plotDynamics <- function(reshaped_df, colored_topFreq_df, min_freq_threshold, pl
   # ----- LOGARITHMIC LINE PLOT -----
   if (plot_model %in% c("logarithmic", "both")) {
     grDevices::cairo_ps(
-      file = paste0(output_directory, input_name, "_line.eps"),
+      file = paste0(output_directory, "/", input_name, "_line.eps"),
       width = 8.25,
       height = 6
     )

@@ -10,13 +10,45 @@
 #' @param agglomeration_method A character string specifying the agglomeration method (e.g., `"ward.D"`, `"complete"`).
 #' @param similarity_metric A character string specifying the similarity metric (`"pearson"` or `"dtw"`).
 #' @param missing_values A character string specifying how missing values should be handled in Pearson correlation (e.g., `"pairwise.complete.obs"`).
+#' @param output_directory A string specifying the directory where plots will be saved.
+#' @param input_name A string used as the base name for output files (e.g., "replicate1").
 #'
 #' @return A data frame with clustering assignments at multiple thresholds (columns named by height).
 #' @export
 #' @name performHClustering
+#' 
+#' @examples
+#' # Load demo barcode count data (installed with the package)
+#' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+#' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+#'
+#' # Filter data to retain dominant and persistent barcodes
+#' filtered_df <- filterData(
+#'   input_df = input_dataframe,
+#'   freq_threshold = 0.00005,
+#'   time_threshold = 5,
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
+#'
+#' # Perform hierarchical clustering using Pearson correlation
+#' # Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
+#' cluster_assignments <- performHClustering(
+#'   filtered_data = filtered_df,
+#'   agglomeration_method = "average",
+#'   similarity_metric = "pearson",
+#'   missing_values = "pairwise.complete.obs",
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
 
 
-performHClustering <- function(filtered_data, agglomeration_method, similarity_metric, missing_values = NULL){
+performHClustering <- function(filtered_data,
+                               agglomeration_method,
+                               similarity_metric,
+                               missing_values = NULL,
+                               output_directory,
+                               input_name){
 
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
@@ -78,10 +110,19 @@ performHClustering <- function(filtered_data, agglomeration_method, similarity_m
   ## Plot dendrogram:
   stats::as.dendrogram(clust) -> dend
 
-  grDevices::postscript(paste(output_directory, input_name,"_", similarity_metric, ".eps",sep=""),width = 5.5,height = 5)
+  grDevices::postscript(paste(output_directory, "/", input_name,"_", similarity_metric, ".eps",sep=""),width = 5.5,height = 5)
   #output_filename <- paste(output_directory, input_name, "_", similarity_metric, ".png", sep = "")
   #png(output_filename, width = 5.5, height = 5)
+  
+  # Storing old par()
+  oldpar <- graphics::par(no.readonly = TRUE)
+  # Restore old par() before exiting the function
+  on.exit(graphics::par(oldpar))
+  
+  
   graphics::par(mar = c(2,2,2,2))
+  
+  
 
   ## Plot heatmap:
   gplots::heatmap.2(distmat,Rowv = dend,Colv = dend,col=rev(color_palette),density.info = "none",trace = "none",

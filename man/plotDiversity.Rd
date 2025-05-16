@@ -4,10 +4,14 @@
 \alias{plotDiversity}
 \title{Plot diversity dynamics over time}
 \usage{
-plotDiversity(dataframe)
+plotDiversity(dataframe, output_directory, input_name)
 }
 \arguments{
 \item{dataframe}{A data frame containing barcode diversities with columns for generations and diversity metrics.}
+
+\item{output_directory}{A string specifying the directory where plots will be saved.}
+
+\item{input_name}{A string used as the base name for output files (e.g., "replicate1").}
 }
 \value{
 A faceted ggplot object (invisible). The function also saves the figure to an EPS file.
@@ -15,4 +19,19 @@ A faceted ggplot object (invisible). The function also saves the figure to an EP
 \description{
 This function plots the diversity of barcoded populations across generations.
 A multi-panel EPS figure is saved, showing one panel per diversity order.
+}
+\examples{
+# Load demo barcode count data (installed with the package)
+demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
+input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
+
+# Calculate diversity indices over time
+diversity_df <- calculate_diversity(input_dataframe)
+
+# Plot and save diversity figure
+plotDiversity(
+  dataframe = diversity_df,
+  output_directory = tempdir(),
+  input_name = "demo"
+)
 }

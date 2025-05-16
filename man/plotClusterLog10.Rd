@@ -4,7 +4,15 @@
 \alias{plotClusterLog10}
 \title{Plot individual barcode frequencies (log10) for a single cluster}
 \usage{
-plotClusterLog10(df, cluster, color, tf, effective.breaks)
+plotClusterLog10(
+  df,
+  cluster,
+  color,
+  tf,
+  effective.breaks,
+  output_directory,
+  input_name
+)
 }
 \arguments{
 \item{df}{A dataframe containing barcode frequencies in a single cluster.}
@@ -16,9 +24,13 @@ plotClusterLog10(df, cluster, color, tf, effective.breaks)
 \item{tf}{A dataframe containing the LOESS-smoothed trajectory for the cluster.}
 
 \item{effective.breaks}{A vector of time points used as breaks on the x-axis.}
+
+\item{output_directory}{A string specifying the directory where plots will be saved.}
+
+\item{input_name}{A string used as the base name for output files (e.g., "replicate1").}
 }
 \value{
-A ggplot object.
+A ggplot object showing the log10-transformed barcode frequencies and the LOESS-smoothed average trajectory for a single cluster.
 }
 \description{
 Plots all barcodes in a cluster on a log10 y-scale, along with the LOESS-smoothed average trajectory.
