@@ -32,14 +32,14 @@
 #'
 #' # Perform hierarchical clustering using Pearson correlation
 #' # Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
-# cluster_assignments <- performHClustering(
-#   filtered_data = filtered_df,
-#   agglomeration_method = "average",
-#   similarity_metric = "pearson",
-#   missing_values = "pairwise.complete.obs",
-#   output_directory = tempdir(),
-#   input_name = "demo"
-# )
+#' cluster_assignments <- performHClustering(
+#'   filtered_data = filtered_df,
+#'   agglomeration_method = "average",
+#'   similarity_metric = "pearson",
+#'   missing_values = "pairwise.complete.obs",
+#'   output_directory = tempdir(),
+#'   input_name = "demo"
+#' )
 #' 
 #' # Filter clusters to retain only those with at least 8 members,
 #' #         unless they contain a dominant lineage
