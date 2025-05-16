@@ -16,7 +16,7 @@
 #' @name filterHC
 #' 
 #' @examples
-#' \donttest{ 
+#' if(interactive()){ 
 #' # Load demo barcode count data (installed with the package)
 #' demo_file <- system.file("extdata", "demo_input.csv", package = "doblin")
 #' input_dataframe <- readr::read_csv(demo_file, show_col_types = FALSE)
