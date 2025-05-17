@@ -8,9 +8,10 @@ performHClustering(
   filtered_data,
   agglomeration_method,
   similarity_metric,
-  missing_values = NULL,
   output_directory,
-  input_name
+  input_name,
+  missing_values = NULL,
+  dtw_norm = NULL
 )
 }
 \arguments{
@@ -20,11 +21,14 @@ performHClustering(
 
 \item{similarity_metric}{A character string specifying the similarity metric (\code{"pearson"} or \code{"dtw"}).}
 
-\item{missing_values}{A character string specifying how missing values should be handled in Pearson correlation (e.g., \code{"pairwise.complete.obs"}).}
-
 \item{output_directory}{A string specifying the directory where plots will be saved.}
 
-\item{input_name}{A string used as the base name for output files (e.g., "replicate1").}
+\item{input_name}{A string used as the base name for output files (e.g., "replicate1")}
+
+\item{missing_values}{Optional. A character string specifying how missing values should be handled in Pearson correlation (e.g., \code{"pairwise.complete.obs"}).}
+
+\item{dtw_norm}{Optional. A character string specifying the norm to use with DTW distance ("L1" for Manhattan, "L2" for Euclidean).
+Required if \code{similarity_metric = "dtw"}.}
 }
 \value{
 A data frame with clustering assignments at multiple thresholds (columns named by height).
@@ -51,13 +55,13 @@ filtered_df <- filterData(
 )
 
 # Perform hierarchical clustering using Pearson correlation
-# Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
 cluster_assignments <- performHClustering(
   filtered_data = filtered_df,
   agglomeration_method = "average",
   similarity_metric = "pearson",
-  missing_values = "pairwise.complete.obs",
   output_directory = tempdir(),
-  input_name = "demo"
+  input_name = "demo",
+  missing_values = "pairwise.complete.obs",
+  dtw_norm = NULL
 )
 }

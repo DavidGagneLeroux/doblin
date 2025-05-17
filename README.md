@@ -35,7 +35,7 @@ The primary purpose of *Doblin* is to furnish an open-source toolkit for the pre
 
 To execute the main script, use the following command line:
 ```
-  ~$ Rscript ./main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] -c [TIME_CUTOFF]
+  ~$ Rscript ./demo/main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] -c [TIME_CUTOFF]
 ```
 ### Explanation of Arguments
 ```
@@ -49,9 +49,9 @@ This argument is used when plotting the dynamics.
 ```
 ### Example
 
-Here is an example of how to use the command line with `demo_input.csv` provided in the `doblin/demo/` folder:
+Here is an example of how to use the command line with `demo_input.csv` provided in the `doblin/inst/extdata/` folder:
 ```
-  ~$ Rscript ./main.R -t 0.0005 -o ~/Documents/doblin/ -n test -i ~/Documents/doblin/demo/demo_input.csv -c 12`
+  ~$ Rscript ./demo/main.R -t 0.0005 -o ~/Documents/doblin/ -n test -i ~/Documents/doblin/inst/extdata/demo_input.csv -c 12
 ```
 `demo_input.csv` contains data from a forward evolutionary simulation of a bacterial population under Wright-Fisher's model. The format of the input file is a csv file containing the barcode extraction results over **3 columns** (ID, Time, Reads), where 
 
@@ -67,21 +67,21 @@ Here is an example of how to use the command line with `demo_input.csv` provided
 Running the pipeline interactively allows the user to delve into each step of the analysis and make informed decisions during the process.
 
 ```
-[1] "Processing the command line..."
-[1] "Step 0: Processing CSV file..."
+Processing the command line...
+Step 0: Processing CSV file...
 Do you want to run this pipeline in an interactive way?(y/n): y
 ```
 As a first step, we recommend visualizing the dataset. Note that linear-scale plots can be very resource-intensive and may take several minutes to generate.
 
 ```
 Do you want to plot the dynamics of your dataset?(y/n): y
-[1] "Step 1: Plotting the dynamics..."
-[1] "1.1 Reshaping input file into long-format dataframe..."
-[1] "1.2 Retrieving the first 50 barcodes with the highest maximum frequencies..."
-[1] "1.3 Assigning colors to lineages having reached the minimum frequency threshold among the 50 most dominant barcoded lines..."
+Step 1: Plotting the dynamics...
+1.1 Reshaping input file into long-format dataframe...
+1.2 Retrieving the first 50 barcodes with the highest maximum frequencies...
+1.3 Assigning colors to lineages having reached the minimum frequency threshold among the 50 most dominant barcoded lines...
 Do you want to plot a log-scale model, a linear-scale model or both? (logarithmic/linear/both): both
-[1] "Plotting in progress..."
-[1] "WARNING: Linear-scale plots are very heavy. This might take several minutes..."
+Plotting in progress...
+Rendering linear-scale area plot. This may take a few minutes...
 ```
 The following figures represent respectively the log-transformed and the linear representations of the dataset's dynamics.
 
@@ -95,8 +95,8 @@ The user can decide whether or not to display the diversity indices of the datas
 
 ```
 Do you want to plot the diversity of your dataset?(y/n): y
-[1] "2.1 Calculating the diversity..."
-[1] "2.2 Plotting the diversity..."
+2.1 Calculating the diversity...
+2.2 Plotting the diversity...
 ```
 
 When q = 0, the index counts the absolute diversity in the sample, equivalent to species richness in ecological studies. When q = 1, the index weights each barcode lineage by its frequency, equivalent to the exponential of Shannon entropy H. When q → ∞, the index is the reciprocal of the proportional abundance of the most common barcode lineages, focusing only on higher-frequency lineages. The following figure illustrates the temporal evolution of the dataset's diversity indices.
@@ -110,10 +110,10 @@ To infer clonal clusters, we employ a clustering approach based on the trajector
 For this example, we'll set the minimum average frequency at `0.00005`.
 
 ```
-[1] "Step 3: Clustering..."
+Step 3: Clustering...
 Specify a minimum mean frequency below which lineages are not taken into account during clustering (ex: 0.00005): 0.00005
-[1] "3.1 Filtering the input data..."
-[1] "3.2 Clustering the filtered data..."
+3.1 Filtering the input data...
+3.2 Clustering the filtered data...
 ```
 Select a linkage/agglomeration method from those available in `stats::hclust()`:
 
@@ -125,13 +125,15 @@ Choose a similarity metric (Pearson correlation or DTW) for computing the pairwi
 ```
 Enter the metric to be used to measure similarity between two time-series (pearson/dtw) : pearson
 Enter a method for computing covariances in the presence of missing values. Please refer to stats::cor() R documentation (ex: pairwise.complete.obs) : pairwise
-[1] "3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... "
-[1] "3.2.2 Filtering the hierarchical clustering results..."
+3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... 
+3.2.2 Filtering the hierarchical clustering results...
 ```
 Clusters with a small number of lineages may be disproportionately affected by sequencing errors. To mitigate this issue, users are prompted to specify a minimum number of members per cluster (e.g., X=8). However, disregarding clusters with fewer than X members could lead to the omission of dominant clusters. In such instances, users are required to provide a minimum average frequency that must be attained by at least one of the lines within potentially disregarded clusters for them to be considered.For this example, we'll set the minimum average frequency to `0.0001`.
 ```
 Enter the minimum number of members per cluster for test : 8
-By ignoring clusters with fewer than 8  members, you are potentially ignoring dominant clusters.Please indicate a minimum average frequency that must be reached by at least one of the lines of potentially ignored clusters for them to be taken into account: 0.0001
+Enter the minimum average frequency to rescue small clusters: 0.0001
+Warning message:
+  By ignoring clusters with fewer than 8 members, you are potentially ignoring dominant clusters.
 ```
 To determine the optimal clustering threshold in our hierarchical clustering process, we consider three overarching trends:
 
@@ -146,14 +148,14 @@ Our approach involves identifying the cross-over point between the smallest dist
 ![](https://github.com/DavidGagneLeroux/doblin/blob/master/vignettes/images/test_threshold_selection.jpg?raw=true)
 
 ```
-[1] "3.2.3 Quantifying the hierarchical clustering..."
+3.2.3 Quantifying the hierarchical clustering...
 3.2.4 Enter the chosen threshold for the clustering of test : 0.2
 ```
 Once a specific threshold has been provided, *Doblin* plots every resulting cluster as well as the final clonal dynamics. It's important to note that the clonal dynamics consist of the LOESS curves of each resulting cluster.
 
 ```
-[1] "3.2.5 Plotting the resulting clusters..."
-[1] "DONE"
+3.2.5 Plotting the resulting clusters...
+DONE
 ```
 
 

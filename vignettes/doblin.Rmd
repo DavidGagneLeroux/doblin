@@ -124,13 +124,14 @@ Once the barcodes have been extracted, it is primordial to format the data as fo
 Commad line:
 
 ```
-Rscript ./main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] 
+Rscript ./demo/main.R -t [MIN_FREQUENCY] -o [OUTPUT_DIR] -n [INPUT_FILE_NAME] -i [INPUT_FILE] 
 -c [TIME_CUTOFF]
 ```
 
 Here's an example of how to use the command line:
 ```{r eval=FALSE, collapse=TRUE}
-Rscript ./main.R -t 0.0005 -o ~/Documents/ -n test -i ~/Documents/test.csv -c 12
+Rscript ./demo/main.R -t 0.0005 -o ~/Documents/doblin/ -n test 
+-i ~/Documents/input.csv -c 12
 ```
 
 Where
@@ -156,7 +157,8 @@ Where
 From the outset, the user must choose whether or not to generate a visualization of his dataset:
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "Step 0: Processing CSV file..."
+Processing the command line...
+Step 0: Processing CSV file...
 Do you want to plot the dynamics of your dataset?(y/n): y
 ```
 
@@ -165,16 +167,18 @@ As previously outlined, the provided input file consists of three columns: ID, T
 The user can choose between plotting the dynamics on a logarithmic scale, a linear scale or both. **Users should be aware that plotting their dynamics on a linear scale can be a heavy task requiring several minutes of processing time.** 
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "Step 1: Plotting the dynamics..."
-[1] "1.1 Reshaping input file into long-format dataframe..."
-[1] "1.2 Retrieving the first 1000 barcodes with the highest maximum frequencies..."
-[1] "1.3 Assigning colors to lineages having reached the minimum frequency threshold
-among the 1000 most dominant barcoded lines..."
+Step 1: Plotting the dynamics...
+1.1 Reshaping input file into long-format dataframe...
+1.2 Retrieving the first 1000 barcodes with the highest maximum frequencies...
+1.3 Assigning colors to lineages having reached the minimum frequency threshold
+among the 1000 most dominant barcoded lines...
 ```
 
 ```{r eval=FALSE, collapse=TRUE}
-Plot a log-scale model, a linear-scale model or both? (logarithmic/linear/both): both
-[1] "Plotting in progress..."
+Do you want to plot a log-scale model, a linear-scale model or both?
+  (logarithmic/linear/both): both
+Plotting in progress...
+Rendering linear-scale area plot. This may take a few minutes...
 ```
 
 \pagebreak
@@ -205,8 +209,8 @@ Figure 1-b) presents a visualization of the dynamics on a linear scale. Here, do
 
 ```{r eval=FALSE, collapse=TRUE}
 Do you want to plot the diversity of your dataset?(y/n): y
-[1] "2.1 Calculating the diversity..."
-[1] "2.2 Plotting the diversity..."
+2.1 Calculating the diversity...
+2.2 Plotting the diversity...
 ```
 
 
@@ -230,10 +234,10 @@ When q = 0, the index simply counts the absolute diversity in the sample, i.e. t
 To infer clonal clusters, we employ a clustering approach based on the trajectory of frequency patterns exhibited by barcoded lineages. This entails grouping together lineages that demonstrate similar frequency patterns. To enhance the precision of our clustering approach, we omit barcodes failing to attain a **minimum mean frequency** as well as those lacking an **adequate number of time points** (controlled by the -c argument in the command line). This stringent criterion ensures that all barcode lineages included in the clustering analysis possess a sufficient number of data points for meaningful pairwise comparisons. Consequently, the lineage clustering process prioritizes dominant and persistent barcodes while excluding those that rapidly become extinct.
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "Step 3: Clustering..."
+Step 3: Clustering...
 Specify a minimum mean frequency below which lineages are not taken into account during
 clustering (ex: 0.00005): 0.00005
-[1] "3.1 Filtering the input data..."
+3.1 Filtering the input data...
 ```
 
 To conduct hierarchical clustering of dominant and persistent barcodes, users need to specify a linkage/agglomeration method from those available in the `stats::hclust()` function in R. The hierarchical clustering relies on a pairwise distance matrix that encapsulates the similarity between pairs of barcoded lineages. This distance matrix is computed based on a user-defined similarity metric, which can be either Pearson correlation or Dynamic Time Warping (DTW). If the user opts for Pearson correlation, they must also specify a method for computing covariances in the presence of missing values, as per the options provided in the `stats::cor()` documentation. Figure 3 presents a pairwise heatmap, where blue indicates similar lineages and red highlights significant differences among the lineages.
@@ -251,20 +255,20 @@ Therefore, the procedure for hierarchical clustering involves the following step
 3. If Pearson correlation is selected, specify a method for computing covariances in the presence of missing values, as outlined in the `stats::cor()` R documentation.
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "3.2 Clustering the filtered data..."
-Enter a linkage method (ex: average): average
-Enter the metric to be used to measure similarity between two time-series (pearson/dtw):
+3.2 Clustering the filtered data...
+Enter an agglomeration method (refer to stats::hclust() R documentation): average
+Enter the metric to be used to measure similarity between two time-series (pearson/dtw) :
   pearson
 Enter a method for computing covariances in the presence of missing values. 
-Please refer to stats::cor() R documentation. (ex: pairwise.complete.obs):
-  pair
+Please refer to stats::cor() R documentation (ex: pairwise.complete.obs) : 
+  pairwise
 ```
 
 4. If DTW is selected, specify a method for computing the local distance, as outlined in the dtwclust::dtw_basic() R documentation (i.e. L1 or L2).
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "3.2 Clustering the filtered data..."
-Enter a linkage method (ex: average): average
+3.2 Clustering the filtered data...
+Enter an agglomeration method (refer to stats::hclust() R documentation): average
 Enter the metric to be used to measure similarity between two time-series (pearson/dtw):
   dtw
 Enter the norm for the local distance calculation
@@ -290,27 +294,28 @@ Our approach involves identifying the cross-over point between the smallest dist
 As previously mentioned, clusters with a small number of lineages may be disproportionately affected by sequencing errors. To mitigate this issue, users are prompted to specify a minimum number of members per cluster (e.g., X=8). However, disregarding clusters with fewer than X members could lead to the omission of dominant clusters. In such instances, users are required to provide a minimum average frequency that must be attained by at least one of the lines within potentially disregarded clusters for them to be considered.
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum
-height of hierarchical clustering... "
-[1] "3.2.2 Filtering the hierarchical clustering results..."
+3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum 
+height of hierarchical clustering... 
+3.2.2 Filtering the hierarchical clustering results...
 Enter the minimum number of members per cluster for test : 8
-By ignoring clusters with fewer than 8  members, you are potentially ignoring dominant
-clusters. Please indicate a minimum average frequency that must be reached by at least
-one of the lines of potentially ignored clusters for them to be taken into account:
-  0.001
+Enter the minimum number of members per cluster for test : 8
+Enter the minimum average frequency to rescue small clusters: 0.001
+Warning message:
+  By ignoring clusters with fewer than 8 members, you are potentially ignoring 
+  dominant clusters.
 ```
 
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "3.2.3 Quantifying the hierarchical clustering..."
+3.2.3 Quantifying the hierarchical clustering...
 3.2.4 Enter the chosen threshold for the clustering of test : 0.3
 ```
 
 Once a specific threshold has been provided, *Doblin* plots every resulting cluster as well as the final clonal dynamics. It's important to note that the clonal dynamics consist of the LOESS curves of each resulting cluster. Figures 5-a) through 5-f) illustrate the six resulting clusters and their respective lineages. Each cluster's black curve corresponds to its LOESS curve. Figure 5-g) illustrates the clonal dynamics of the dataset.
 
 ```{r eval=FALSE, collapse=TRUE}
-[1] "3.2.5 Plotting the resulting clusters..."
-[1] "DONE"
+3.2.5 Plotting the resulting clusters...
+DONE
 ```
 \begin{figure}[ht]
         \begin{subfigure}{0.25\textwidth}

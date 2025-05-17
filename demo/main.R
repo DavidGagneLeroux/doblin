@@ -141,9 +141,11 @@ plot_choice <- match.arg(tolower(plot_choice), c("yes", "no"))
 if (plot_choice == "yes"){
 
   if (interactive()){
-    min_freq_threshold <- as.double(readline(prompt = "Please enter a minimum frequency above which barcodes are assigned colors [default: 0.0005]: "))
+    min_freq_threshold <- readline(prompt = "Please enter a minimum frequency above which barcodes are assigned colors [default: 0.0005]: ")
     if (nchar(min_freq_threshold) == 0) {
       min_freq_threshold <- 0.0005
+    }else {
+      min_freq_threshold <- as.double(input)
     }
     message(paste("Provided minimum frequency:", min_freq_threshold))
   }
@@ -263,8 +265,15 @@ if (similarity_metric == "pearson") {
 
   missing_values <- match.arg(missing_values, c("everything","all.obs","complete.obs","na.or.complete","pairwise.complete.obs"))
 
-}else{
+}else{ #dtw
   missing_values = NULL
+  if (interactive()) {
+    dtw_norm <- readline(prompt = "Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for Euclidean): ")
+  } else if (pipeline_choice == "yes") {
+    cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for Euclidean): ")
+    dtw_norm <- readLines("stdin", n = 1)
+  }
+  dtw_norm <- match.arg(dtw_norm, c("L1", "L2"))
 }
 
 message("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
@@ -272,21 +281,28 @@ message("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 an
 clusters_df = performHClustering(filtered_df,
                                  agglomeration,
                                  similarity_metric,
-                                 missing_values,
                                  output_directory,
-                                 input_name)
+                                 input_name,
+                                 missing_values,
+                                 dtw_norm)
 
 message("3.2.2 Filtering the hierarchical clustering results...")
 
 if (interactive()) {
   min_members <- as.numeric(readline(prompt = paste("Enter the minimum number of members per cluster for", input_name, ": ")))
+  min_freq_ignored_clusters <- as.numeric(readline(prompt = "Enter the minimum average frequency to rescue small clusters: "))
 } else if (pipeline_choice == "yes") {
   cat(paste("Enter the minimum number of members per cluster for", input_name, ": "))
   min_members <- as.numeric(readLines("stdin", n=1))
+  cat("Enter the minimum average frequency to rescue small clusters: ")
+  min_freq_ignored_clusters <- as.numeric(readLines("stdin", n = 1))
 }
 
 
-clusters_filtered = filterHC(filtered_df, clusters_df, min_members)
+clusters_filtered = filterHC(filtered_df,
+                             clusters_df,
+                             min_members,
+                             min_freq_ignored_clusters)
 
 
 message("3.2.3 Quantifying the hierarchical clustering...")

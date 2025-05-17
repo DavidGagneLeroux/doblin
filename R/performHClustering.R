@@ -9,9 +9,11 @@
 #' @param filtered_data A data frame preprocessed with `filterData()`, containing filtered lineage frequencies.
 #' @param agglomeration_method A character string specifying the agglomeration method (e.g., `"ward.D"`, `"complete"`).
 #' @param similarity_metric A character string specifying the similarity metric (`"pearson"` or `"dtw"`).
-#' @param missing_values A character string specifying how missing values should be handled in Pearson correlation (e.g., `"pairwise.complete.obs"`).
 #' @param output_directory A string specifying the directory where plots will be saved.
-#' @param input_name A string used as the base name for output files (e.g., "replicate1").
+#' @param input_name A string used as the base name for output files (e.g., "replicate1")
+#' @param missing_values Optional. A character string specifying how missing values should be handled in Pearson correlation (e.g., `"pairwise.complete.obs"`).
+#' @param dtw_norm Optional. A character string specifying the norm to use with DTW distance ("L1" for Manhattan, "L2" for Euclidean).
+#' Required if `similarity_metric = "dtw"`.
 #'
 #' @return A data frame with clustering assignments at multiple thresholds (columns named by height).
 #' @export
@@ -32,23 +34,24 @@
 #' )
 #'
 #' # Perform hierarchical clustering using Pearson correlation
-#' # Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
 #' cluster_assignments <- performHClustering(
 #'   filtered_data = filtered_df,
 #'   agglomeration_method = "average",
 #'   similarity_metric = "pearson",
-#'   missing_values = "pairwise.complete.obs",
 #'   output_directory = tempdir(),
-#'   input_name = "demo"
+#'   input_name = "demo",
+#'   missing_values = "pairwise.complete.obs",
+#'   dtw_norm = NULL
 #' )
 
 
 performHClustering <- function(filtered_data,
                                agglomeration_method,
                                similarity_metric,
-                               missing_values = NULL,
                                output_directory,
-                               input_name){
+                               input_name,
+                               missing_values = NULL,
+                               dtw_norm = NULL){
 
   filtered_dataf=filtered_data[,!(colnames(filtered_data) %in% c("ID","mean","points"))]
   filtered_dataf[filtered_dataf == 0] <- NA
@@ -85,13 +88,9 @@ performHClustering <- function(filtered_data,
       proxy::pr_DB$set_entry(FUN=(dtwclust::dtw_basic), names=c("dtw_basic_3"))
     }
 
-    if (interactive()) {
-      dtw_norm <- readline(prompt = "Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
-    } else if (pipeline_choice == "yes") {
-      cat("Enter the norm for the local distance calculation ('L1' for Manhattan or 'L2' for (squared) Euclidean): ")
-      dtw_norm <- readLines("stdin", n=1)
+    if (is.null(dtw_norm)) {
+      stop("You must provide a value for 'dtw_norm' when using similarity_metric = 'dtw'. Choose either 'L1' or 'L2'.")
     }
-    dtw_norm <- match.arg(dtw_norm, c("L1","L2"))
 
     distmat = proxy::dist(t(mat), method = "dtw_basic", normalize = TRUE, norm=dtw_norm)
     clust <- stats::hclust(stats::as.dist(distmat),method=agglomeration_method )

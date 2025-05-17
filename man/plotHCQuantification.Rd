@@ -65,23 +65,23 @@ filtered_df <- filterData(
 )
 
 # Perform hierarchical clustering using Pearson correlation
-# Note: If similarity_metric = "dtw" is used instead, note that it requires interactive input
 cluster_assignments <- performHClustering(
   filtered_data = filtered_df,
   agglomeration_method = "average",
   similarity_metric = "pearson",
-  missing_values = "pairwise.complete.obs",
   output_directory = tempdir(),
-  input_name = "demo"
+  input_name = "demo",
+  missing_values = "pairwise.complete.obs",
+  dtw_norm = NULL
 )
 
 # Filter clusters to retain only those with at least 8 members,
 # unless they contain a dominant lineage
-# (this step prompts the user for an average frequency threshold)
 filtered_clusters <- filterHC(
   series_filtered = filtered_df,
   clusters = cluster_assignments,
-  n_members = 8
+  n_members = 8,
+  min_freq_ignored_clusters = 0.0001
 )
 
 # Quantify and visualize clustering quality across thresholds
