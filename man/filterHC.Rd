@@ -57,7 +57,6 @@ cluster_assignments <- performHClustering(
 )
 
 # Filter clusters: keep only clusters with at least 8 members.
-# Also retain small clusters if at least one lineage has average frequency ≥ 0.001.
 filtered_clusters <- filterHC(
   series_filtered = filtered_df,
   clusters = cluster_assignments,
