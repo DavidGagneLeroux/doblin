@@ -274,6 +274,17 @@ if (similarity_metric == "pearson") {
     dtw_norm <- readLines("stdin", n = 1)
   }
   dtw_norm <- match.arg(dtw_norm, c("L1", "L2"))
+  
+  # Visualizing the DTW-aligned time-series 
+  
+  if (interactive()) {
+    dtw_alignments <- readline(prompt = "Do you want to generate visualizations of the DTW alignment paths among the top 10 frequency trajectories? (yes/no): ")
+  } else if (pipeline_choice == "yes") {
+    cat("Do you want to generate visualizations of the DTW alignment paths among the top 10 frequency trajectories? (yes/no): ")
+    dtw_alignments <- readLines("stdin", n = 1)
+  }
+  dtw_alignments <- match.arg(dtw_alignments, c("yes", "no"))
+  
 }
 
 message("3.2.1 Computing the relative clusters for ALL thresholds between 0.1 and maximum height of hierarchical clustering... ")
@@ -284,7 +295,8 @@ clusters_df = performHClustering(filtered_df,
                                  output_directory,
                                  input_name,
                                  missing_values,
-                                 dtw_norm)
+                                 dtw_norm,
+                                 dtw_alignments)
 
 message("3.2.2 Filtering the hierarchical clustering results...")
 

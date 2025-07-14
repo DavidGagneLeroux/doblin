@@ -11,7 +11,8 @@ performHClustering(
   output_directory,
   input_name,
   missing_values = NULL,
-  dtw_norm = NULL
+  dtw_norm = NULL,
+  dtw_alignments = NULL
 )
 }
 \arguments{
@@ -27,8 +28,12 @@ performHClustering(
 
 \item{missing_values}{Optional. A character string specifying how missing values should be handled in Pearson correlation (e.g., \code{"pairwise.complete.obs"}).}
 
-\item{dtw_norm}{Optional. A character string specifying the norm to use with DTW distance ("L1" for Manhattan, "L2" for Euclidean).
-Required if \code{similarity_metric = "dtw"}.}
+\item{dtw_norm}{Optional. A character string specifying the norm to use with DTW distance ("L1" for Manhattan, "L2" for Euclidean). Required if \code{similarity_metric = "dtw"}.}
+
+\item{dtw_alignments}{Optional. Character string indicating whether to visualize
+DTW-aligned time series ("yes" or "no"). Required if \code{similarity_metric = "dtw"}.
+Use "yes" to display time series aligned according to their DTW warping paths,
+typically for quality control purposes.}
 }
 \value{
 A data frame with clustering assignments at multiple thresholds (columns named by height).
@@ -62,6 +67,7 @@ cluster_assignments <- performHClustering(
   output_directory = tempdir(),
   input_name = "demo",
   missing_values = "pairwise.complete.obs",
-  dtw_norm = NULL
+  dtw_norm = NULL,
+  dtw_alignments = NULL
 )
 }

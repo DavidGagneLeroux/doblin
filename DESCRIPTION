@@ -32,10 +32,13 @@ Imports:
     stats,
     imputeTS,
     dtwclust,
+    dtw,
     purrr,
     tidyr,
     TSdist,
-    graphics
+    graphics,
+    gridExtra,
+    scales
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
